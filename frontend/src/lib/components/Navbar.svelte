@@ -6,7 +6,7 @@
 </script>
 
 <nav
-  class="fixed top-0 w-full z-50 bg-brand-bg/80 backdrop-blur-md border-b-2 border-brand-text/10 p-4 shadow-lg shadow-brand-accent/5"
+  class="fixed top-0 w-full z-50 bg-brand-surface/80 backdrop-blur-md border-b-2 border-brand-text/10 p-4 shadow-lg shadow-brand-accent/5"
 >
   <div class="container mx-auto flex justify-between items-center">
     <a href="/" class="text-xl font-bold text-brand-accent">LearningBuddy</a>
@@ -115,7 +115,7 @@
   <!-- Mobile Menu Dropdown -->
   {#if isMenuOpen}
     <div
-      class="md:hidden absolute top-full left-0 w-full bg-brand-bg/95 backdrop-blur-xl border-b-2 border-brand-text/10 p-4 flex flex-col gap-4 shadow-2xl animate-in slide-in-from-top-5"
+      class="md:hidden absolute top-full left-0 w-full bg-brand-surface/95 backdrop-blur-xl border-b-2 border-brand-text/10 p-4 flex flex-col gap-4 shadow-2xl animate-in slide-in-from-top-5"
     >
       <a
         href="/"

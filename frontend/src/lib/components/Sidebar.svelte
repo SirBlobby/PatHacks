@@ -7,6 +7,7 @@
         { href: "/panel/dashboard", label: "Dashboard" },
         { href: "/panel/devices", label: "Devices" },
         { href: "/panel/recordings", label: "Recordings" },
+        { href: "/panel/plans", label: "Plans" },
         { href: "/panel/settings", label: "Settings" },
         { href: "/panel/profile", label: "Profile" },
         { href: "/panel/logout", label: "Logout" },
@@ -14,7 +15,7 @@
 </script>
 
 <aside
-    class="w-64 bg-brand-bg/90 backdrop-blur-md border-r-2 border-brand-text/10 h-screen fixed flex flex-col p-4 z-50 overflow-y-auto transition-transform duration-300 shadow-xl shadow-brand-accent/5 md:translate-x-0 {isOpen
+    class="w-64 bg-brand-surface/90 backdrop-blur-md border-r-2 border-brand-text/10 h-screen fixed flex flex-col p-4 z-50 overflow-y-auto transition-transform duration-300 shadow-xl shadow-brand-accent/5 md:translate-x-0 {isOpen
         ? 'translate-x-0'
         : '-translate-x-full'}"
 >

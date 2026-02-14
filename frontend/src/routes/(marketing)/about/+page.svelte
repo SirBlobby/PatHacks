@@ -14,7 +14,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             <div
-                class="p-6 bg-brand-bg/50 backdrop-blur rounded-xl border-2 border-brand-text/10 shadow-lg"
+                class="p-6 bg-brand-surface backdrop-blur rounded-xl border-2 border-brand-text/10 shadow-lg"
             >
                 <h3 class="text-xl font-bold mb-3 text-brand-accent">
                     Our Mission
@@ -25,7 +25,7 @@
                 </p>
             </div>
             <div
-                class="p-6 bg-brand-bg/50 backdrop-blur rounded-xl border-2 border-brand-text/10 shadow-lg"
+                class="p-6 bg-brand-surface backdrop-blur rounded-xl border-2 border-brand-text/10 shadow-lg"
             >
                 <h3 class="text-xl font-bold mb-3 text-brand-accent">
                     Our Tech

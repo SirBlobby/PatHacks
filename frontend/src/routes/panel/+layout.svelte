@@ -18,7 +18,7 @@
 
     <!-- Mobile Header -->
     <div
-        class="md:hidden fixed top-0 left-0 w-full z-40 bg-brand-bg/90 backdrop-blur border-b border-brand-text/10 p-4 flex items-center justify-between"
+        class="md:hidden fixed top-0 left-0 w-full z-40 bg-brand-surface/90 backdrop-blur border-b border-brand-text/10 p-4 flex items-center justify-between"
     >
         <span class="font-bold text-brand-accent">LearningBuddy</span>
         <button

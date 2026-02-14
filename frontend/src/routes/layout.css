@@ -5,13 +5,15 @@
 @theme {
     --font-jetbrains: 'JetBrains Mono', monospace;
     --color-brand-bg: var(--bg-color);
+    --color-brand-surface: var(--surface-color);
     --color-brand-text: var(--text-color);
     --color-brand-accent: oklch(var(--accent-color));
 }
 
+/* Dark Mode (Default) */
 :root {
-    /* Dark Mode (Default) */
     --bg-color: #0d1117;
+    --surface-color: #161b22;
     --text-color: #c9d1d9;
     --accent-color: 74.39% 0.174 56.63;
     /* Orange (OKLCH approximation of #FF9F1C) */
@@ -23,7 +25,8 @@
 :root[data-theme="light"] {
     /* Light Mode */
     --bg-color: #f3f4f6;
-    --text-color: #1f2937;
+    --surface-color: #e5e7eb;
+    --text-color: #111827;
     --accent-color: 62.8% 0.179 255.4;
     /* Blue (OKLCH approximation of #3b82f6) */
     /* Blue Accent in Light Mode */

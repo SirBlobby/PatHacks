@@ -2,7 +2,7 @@
 
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <div
-        class="bg-brand-bg/50 backdrop-blur border border-brand-text/10 p-6 rounded-xl"
+        class="bg-brand-surface backdrop-blur border border-brand-text/10 p-6 rounded-xl"
     >
         <h3 class="text-brand-text/70 text-sm font-medium mb-1">
             Total Recordings
@@ -11,7 +11,7 @@
         <div class="text-green-500 text-sm mt-2">+3 this week</div>
     </div>
     <div
-        class="bg-brand-bg/50 backdrop-blur border border-brand-text/10 p-6 rounded-xl"
+        class="bg-brand-surface backdrop-blur border border-brand-text/10 p-6 rounded-xl"
     >
         <h3 class="text-brand-text/70 text-sm font-medium mb-1">
             Hours Transcribed
@@ -20,7 +20,7 @@
         <div class="text-green-500 text-sm mt-2">+2.1h this week</div>
     </div>
     <div
-        class="bg-brand-bg/50 backdrop-blur border border-brand-text/10 p-6 rounded-xl"
+        class="bg-brand-surface backdrop-blur border border-brand-text/10 p-6 rounded-xl"
     >
         <h3 class="text-brand-text/70 text-sm font-medium mb-1">
             Active Devices
@@ -31,7 +31,7 @@
 </div>
 
 <div
-    class="bg-brand-bg/50 backdrop-blur border border-brand-text/10 rounded-xl p-6"
+    class="bg-brand-surface backdrop-blur border border-brand-text/10 rounded-xl p-6"
 >
     <h2 class="text-xl font-bold text-brand-text mb-4">Recent Activity</h2>
     <div class="space-y-4">
