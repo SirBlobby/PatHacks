@@ -31,7 +31,7 @@ The backend must chunk transcript text and store embeddings in a vector database
 Functionality:
 Chunk transcript into readable sections
 Generate embeddings for each chunk
-Store chunk vectors in a vector database (Pinecone/Weaviate/Chroma/pgvector)
+Store chunk vectors in a vector database (MongoDB Atlas Vector Search)
 Allow re-indexing if transcript is updated
 
 
@@ -39,11 +39,11 @@ The backend must store lecture recordings uploaded by the device or user.
 Functionality:
 Create a recording entry with metadata
 Upload audio files (wav/mp3/m4a)
-Store recordings in local storage or S3-compatible storage
+Store recordings in local storage
 Stream/download audio for playback
 Delete recordings
 
-The backend must convert uploaded audio into text transcripts using a transcription engine.
+The backend must convert uploaded audio into text transcripts using a transcription engine. Faster-whisper is recommended.
 Functionality:
 Start transcription jobs
 Track transcription status (queued/processing/done/failed)
@@ -54,6 +54,8 @@ Functionality:
 Generate short summary and detailed summary
 Generate bullet point notes / key takeaways
 Store summary output for quick retrieval
+
+USE Gemini API for summaries and chat.
 
 The backend must support user-specific preferences that control AI behavior.
 Functionality:
@@ -76,7 +78,7 @@ Send device heartbeat (online/offline tracking)
 Store metadata (lecture name, course name, timestamp)
 Job Queue system
 Functionality:
-Background processing queue (Redis + BullMQ / Celery / RabbitMQ)
+Background processing queue
 Job state tracking
 Retry failed jobs
 Store pipeline state for each recording
