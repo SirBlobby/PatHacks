@@ -83,3 +83,4 @@ Job state tracking
 Retry failed jobs
 Store pipeline state for each recording
 
+MAKE SURE TO LOOK AT THE FRONTEND CODE FOR REFERENCE OF WHAT THE BACKEND SHOULD BE DOING.
