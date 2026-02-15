@@ -1,0 +1,49 @@
+FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+
+WORKDIR /app
+
+# Prevent interactive prompts during apt install
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install Python 3.12, system dependencies, and ffmpeg
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    python3.12 \
+    python3.12-venv \
+    python3.12-dev \
+    python3-pip \
+    gcc \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Make python3.12 the default python
+RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.12 1 \
+    && update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+
+# Upgrade pip
+RUN python -m ensurepip --upgrade && python -m pip install --upgrade pip
+
+COPY requirements.txt .
+
+# Install CTranslate2 with CUDA support first, then the rest
+RUN pip install --no-cache-dir ctranslate2 \
+    && pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY . .
+
+# Create uploads directory
+RUN mkdir -p /app/uploads
+
+# Make CUDA libraries visible to CTranslate2
+ENV LD_LIBRARY_PATH=/usr/local/cuda/lib64:${LD_LIBRARY_PATH}
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+# Expose port (Flask + SocketIO)
+EXPOSE 5000
+
+# Run the application via SocketIO
+CMD ["python", "run.py"]
