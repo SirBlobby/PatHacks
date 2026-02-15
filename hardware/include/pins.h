@@ -24,6 +24,10 @@
 #define OLED_CS        5   // D4  - Chip Select
 #define OLED_RST       6   // D5  - Reset
 
+// --- Push Buttons (Active-Low, Internal Pull-Up) ---
+#define BTN_A_PIN      8   // D9  - Button A
+#define BTN_B_PIN     44   // D7  - Button B
+
 // --- Display Parameters ---
 #define SCREEN_WIDTH  128
 #define SCREEN_HEIGHT  64

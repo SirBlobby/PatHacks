@@ -17,12 +17,12 @@ All components connect to the XIAO ESP32-S3 Sense. The onboard PDM microphone is
 | 5    | D4        | OLED CS           | SPI OLED Display |
 | 6    | D5        | OLED RST          | SPI OLED Display |
 | 7    | D8 (SCK)  | OLED CLK          | SPI OLED Display |
-| 8    | D9 (MISO) | *Available*       | —                |
+| 8    | D9 (MISO) | Button A (INPUT)  | Push Button A    |
 | 10   | D10 (MOSI)| OLED MOSI         | SPI OLED Display |
 | 41   | Internal  | PDM Mic DATA      | Onboard Mic      |
 | 42   | Internal  | PDM Mic CLK       | Onboard Mic      |
 | 43   | D6 (TX)   | *Available (UART)*| —                |
-| 44   | D7 (RX)   | *Available (UART)*| —                |
+| 44   | D7 (RX)   | Button B (INPUT)  | Push Button B    |
 
 ---
 
@@ -94,6 +94,28 @@ RST  ---------- GPIO6  (D5)
 
 ---
 
+## Component 4: Push Buttons (x2)
+
+Two momentary push buttons for user input. Connected between the GPIO pin and GND, using the ESP32-S3's internal pull-up resistors (no external resistors needed). Active-low: pressed = LOW, released = HIGH.
+
+### Wiring
+
+```
+Button A         XIAO ESP32-S3
+--------         ----------------
+Pin 1  --------- GPIO8  (D9)
+Pin 2  --------- GND
+
+Button B         XIAO ESP32-S3
+--------         ----------------
+Pin 1  --------- GPIO44 (D7)
+Pin 2  --------- GND
+```
+
+> **Debounce:** Software debounce (50ms) is applied in firmware. No external RC filter needed.
+
+---
+
 ## Power
 
 The system is powered by a **3.7V LiPo battery** connected to the BAT pads on the bottom of the XIAO ESP32-S3. The onboard BQ25101 charge controller handles charging via USB-C.
@@ -129,9 +151,9 @@ The system is powered by a **3.7V LiPo battery** connected to the BAT pads on th
   OLED CS     ←──  │ D4  (GPIO5)      │
   OLED RST    ←──  │ D5  (GPIO6)      │
   (UART TX)        │ D6  (GPIO43)     │
-  (UART RX)        │ D7  (GPIO44)     │
+  Button B    ──→  │ D7  (GPIO44)     │
   OLED CLK    ←──  │ D8  (GPIO7/SCK)  │
-  (Available)      │ D9  (GPIO8/MISO) │
+  Button A    ──→  │ D9  (GPIO8/MISO) │
   OLED MOSI   ←──  │ D10 (GPIO10/MOSI)│
                    ├──────────────────┤
                    │ 3V3   5V   GND   │
