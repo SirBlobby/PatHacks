@@ -12,14 +12,14 @@ static Bounce btnA;
 static Bounce btnB;
 
 void buttons_init() {
-    btnA.attach(BTN_A_PIN, INPUT_PULLUP);
+    btnA.attach(BUTTON_A_PIN, INPUT_PULLUP);
     btnA.interval(25);  // 25ms debounce
 
-    btnB.attach(BTN_B_PIN, INPUT_PULLUP);
+    btnB.attach(BUTTON_B_PIN, INPUT_PULLUP);
     btnB.interval(25);
 
-    Serial.println("[BTN] Buttons initialized (A=GPIO" + String(BTN_A_PIN) +
-                   ", B=GPIO" + String(BTN_B_PIN) + ")");
+    Serial.println("[BTN] Buttons initialized (A=GPIO" + String(BUTTON_A_PIN) +
+                   ", B=GPIO" + String(BUTTON_B_PIN) + ")");
 }
 
 void buttons_update() {
