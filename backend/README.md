@@ -1,86 +1,67 @@
 # Backend
 
-Backend
-This is the backend of our project. It supports the Learning Buddy device ecosystem, including user authentication, device management, audio recording uploads, transcription, AI summarization, and a chat-based Q&A system using retrieval augmented generation (RAG). Transcripts are chunked and embedded into a vector database for fast semantic search and accurate AI responses.
-The backend is responsible for handling secure user sessions, processing recordings through an AI pipeline, and exposing APIs that the frontend dashboard and hardware device can interact with.
-Core Features
+This is the backend of our project. It supports the Learning Buddy device ecosystem.
 
-The backend must support user registration, login, and session management for the frontend panel system.
-Functionality:
-User registration (email/username + password)
-User login (JWT)
-Logout (token invalidation)
-Password hashing (argon2)
-User profile retrieval and update
-The backend should provide summarized panel data for the dashboard page.
-Functionality:
-Total recordings count
-Total devices count
-Recent recordings list
-Recording processing statuses (queued/transcribing/indexing/ready)
-The backend must support registering and managing Learning Buddy hardware devices.
-Functionality:
-Create/register a new device
+## Setup Instructions
 
+### Prerequisites
+1. **Python 3.10+** installed.
+2. **MongoDB** installed and running locally (or use Atlas connection string).
+3. **FFmpeg** installed and added to system PATH (required for audio processing).
 
-Assign device ownership to a user
-Update device name and metadata
-Track last sync / online status
-Generate pairing tokens or device API keys
-The backend must chunk transcript text and store embeddings in a vector database for retrieval.
-Functionality:
-Chunk transcript into readable sections
-Generate embeddings for each chunk
-Store chunk vectors in a vector database (MongoDB Atlas Vector Search)
-Allow re-indexing if transcript is updated
+### Installation
 
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   ```
 
-The backend must store lecture recordings uploaded by the device or user.
-Functionality:
-Create a recording entry with metadata
-Upload audio files (wav/mp3/m4a)
-Store recordings in local storage
-Stream/download audio for playback
-Delete recordings
+2. Create a virtual environment (optional but recommended):
+   ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-The backend must convert uploaded audio into text transcripts using a transcription engine. Faster-whisper is recommended.
-Functionality:
-Start transcription jobs
-Track transcription status (queued/processing/done/failed)
-Store transcript output in the database
-Support timestamped transcript segments (optional)
-After transcription, the backend should generate AI-based summaries for the lecture.
-Functionality:
-Generate short summary and detailed summary
-Generate bullet point notes / key takeaways
-Store summary output for quick retrieval
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-USE Gemini API for summaries and chat.
+4. Create a `.env` file based on the configuration in `app/core/config.py`:
+   ```env
+   MONGODB_URL=mongodb://localhost:27017
+   DATABASE_NAME=learning_buddy_db
+   SECRET_KEY=your_secret_key_here
+   GOOGLE_API_KEY=your_gemini_api_key_here
+   ```
 
-The backend must support user-specific preferences that control AI behavior.
-Functionality:
-Save AI summary preferences (short vs long)
-Save auto-transcription / auto-summary toggles
-Save preferred AI model options (optional)
-The backend must support a chat interface where users can ask questions about a specific lecture.
-Functionality:
-Store chat history per recording
-Convert user questions into embeddings
-Retrieve relevant transcript chunks from the vector database
-Use retrieved chunks as context for AI responses (RAG)
-Return responses with transcript citations (recommended)
+### Running the Server
 
-The backend must provide secure endpoints specifically for the Learning Buddy device.
-Functionality:
-Authenticate device uploads
-Upload recordings directly from device
-Send device heartbeat (online/offline tracking)
-Store metadata (lecture name, course name, timestamp)
-Job Queue system
-Functionality:
-Background processing queue
-Job state tracking
-Retry failed jobs
-Store pipeline state for each recording
+Start the development server:
+```bash
+uvicorn app.main:app --reload
+```
 
-MAKE SURE TO LOOK AT THE FRONTEND CODE FOR REFERENCE OF WHAT THE BACKEND SHOULD BE DOING.
+The API will be available at `http://localhost:8000`.
+API Documentation (Swagger UI) is at `http://localhost:8000/docs`.
+
+## Core Features Implemented
+
+- **Authentication**: User registration, login (JWT), password hashing (Argon2).
+- **Dashboard**: Stats API (`/dashboard`).
+- **Devices**: Device registration & management (`/devices`).
+- **Recordings**: Upload, list, delete (`/recordings`).
+- **Processing Pipeline**:
+  - Transcription using **Faster-Whisper**.
+  - Vector Embedding using **Gemini Embedding-001**.
+  - Summarization using **Gemini Pro**.
+- **Chat**: RAG-based Q&A (`/chat`).
+- **Device API**: Dedicated endpoints for hardware (`/device/upload`, `/device/heartbeat`).
+
+## Directory Structure
+
+- `app/api`: API route handlers.
+- `app/core`: Configuration, database, security.
+- `app/models`: (Not strictly used, Pydantic schemas in `schemas`).
+- `app/schemas`: Pydantic data models.
+- `app/services`: Business logic (transcription, summary, vector).
