@@ -3,19 +3,22 @@
 
 #include <Arduino.h>
 
-// Initialize the I2S output for the MAX98357 speaker amp
+// Initialize the speaker and I2S
 bool spk_init();
 
-// Play a sine wave tone at the given frequency for a duration
-// freq: frequency in Hz
-// duration_ms: duration in milliseconds
-// volume: amplitude 0.0 - 1.0
-void spk_play_tone(float freq, unsigned long duration_ms, float volume);
+// Process audio stream (must be called in main loop)
+void spk_loop();
 
-// Stop I2S output
+// Play a tone
+// freq: Frequency in Hz
+// duration_ms: Duration in milliseconds
+// volume: Amplitude (0.0 to 1.0)
+void spk_play_tone(float freq, unsigned long duration_ms, float volume = 0.5);
+
+// Stop speaker (silence)
 void spk_stop();
 
-// Test the speaker by playing a sequence of tones
+// Test sequence
 void spk_test();
 
 #endif // SPEAKER_H

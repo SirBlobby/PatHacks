@@ -1,101 +1,109 @@
 // ============================================================
-// Speaker Module - I2S output to Adafruit MAX98357 Amp
-// Generates audio tones via I2S for speaker playback
+// Speaker Module - using pschatzmann/arduino-audio-tools
+// Generates audio tones via I2SStream and SineWaveGenerator
 // ============================================================
 
 #include "speaker.h"
 #include "pins.h"
-#include <I2S.h>
-#include <math.h>
+#include "AudioTools.h"
 
+// Define audio format
+AudioInfo info(16000, 2, 16);
+
+// Components: Generator -> Stream -> I2S
+SineWaveGenerator<int16_t> sineWave(32000);                // Subclass of SoundGenerator with max amplitude 32000
+GeneratedSoundStream<int16_t> sound(sineWave);             // Stream generated from sine wave
+I2SStream out; 
+StreamCopy copier(out, sound);                             // Copies sound into i2s
+
+// Tone management
+static unsigned long tone_end_time = 0;
+static bool is_playing = false;
 static bool spk_initialized = false;
 
 bool spk_init() {
     if (spk_initialized) return true;
+    
+    Serial.println("[SPK] Initializing I2S speaker output (AudioTools)...");
 
-    Serial.println("[SPK] Initializing I2S speaker output...");
-
-    // Configure I2S pins for speaker output
-    // setAllPins(BCLK, WS/LRC, DIN(unused for output), DOUT/DIN_amp, MCK)
-    I2S.setAllPins(SPK_BCLK, SPK_LRC, -1, SPK_DIN, -1);
-
-    // Start I2S in standard stereo mode for the MAX98357
-    // The amp expects standard I2S format
-    if (!I2S.begin(I2S_PHILIPS_MODE, SAMPLE_RATE, BITS_PER_SAMPLE)) {
-        Serial.println("[SPK] ERROR: Failed to initialize I2S!");
+    // Configure I2S Output
+    auto config = out.defaultConfig(TX_MODE);
+    config.copyFrom(info); 
+    config.pin_bck = SPK_BCLK;
+    config.pin_ws = SPK_LRC;
+    config.pin_data = SPK_DIN; 
+    
+    // Start I2S
+    if (!out.begin(config)) {
+        Serial.println("[SPK] ERROR: Failed to initialize I2S stream!");
         return false;
     }
 
+    // Initialize Sine Wave (start silent)
+    sineWave.begin(info, 0);
+    sineWave.setAmplitude(0);
+    
     spk_initialized = true;
-    Serial.println("[SPK] Speaker output initialized successfully.");
+    Serial.println("[SPK] Speaker initialized.");
     return true;
 }
 
+void spk_loop() {
+    if (!spk_initialized) return;
+
+    // Check if tone duration has passed
+    if (is_playing && millis() > tone_end_time) {
+        sineWave.setAmplitude(0); // Silence
+        is_playing = false;
+    }
+
+    // Always copy data to keep I2S clock running and buffer full (silence or tone)
+    copier.copy();
+}
+
 void spk_play_tone(float freq, unsigned long duration_ms, float volume) {
-    if (!spk_initialized) {
-        Serial.println("[SPK] Not initialized!");
-        return;
-    }
+    if (!spk_initialized) spk_init();
 
-    // Clamp volume
-    if (volume < 0.0f) volume = 0.0f;
-    if (volume > 1.0f) volume = 1.0f;
-
-    Serial.println("[SPK] Playing " + String((int)freq) + " Hz for " + String(duration_ms) + " ms");
-
-    unsigned long start = millis();
-    float samples_per_cycle = (float)SAMPLE_RATE / freq;
-    int sample_index = 0;
-
-    while (millis() - start < duration_ms) {
-        // Generate sine wave sample
-        float angle = 2.0f * PI * (float)sample_index / samples_per_cycle;
-        int16_t sample = (int16_t)(sinf(angle) * 32767.0f * volume);
-
-        // Write sample (both L and R channels in Philips mode)
-        I2S.write(sample);
-        I2S.write(sample);
-
-        sample_index++;
-        if (sample_index >= (int)samples_per_cycle) {
-            sample_index = 0;
-        }
-    }
+    // scale volume (0.0 - 1.0) to int16_t range (max ~32000)
+    int16_t amp = (int16_t)(volume * 32000); 
+    
+    sineWave.setFrequency(freq);
+    sineWave.setAmplitude(amp);
+    
+    tone_end_time = millis() + duration_ms;
+    is_playing = true;
+    
+    // Serial.println("[SPK] Tone: " + String(freq) + "Hz");
 }
 
 void spk_stop() {
     if (spk_initialized) {
-        I2S.end();
-        spk_initialized = false;
-        Serial.println("[SPK] Speaker stopped.");
+        sineWave.setAmplitude(0);
+        is_playing = false;
+        // We don't call out.end() usually because restarting I2S can be glitchy
     }
 }
 
 void spk_test() {
     Serial.println("[SPK] === Speaker Test ===");
+    spk_init();
+    
+    // C Major Triad
+    spk_play_tone(650, 500, 0.5); // C4
+    unsigned long start = millis();
+    while(millis() - start < 600) spk_loop(); 
+    
+    spk_play_tone(700, 500, 0.5); // E4
+    start = millis();
+    while(millis() - start < 600) spk_loop();
 
-    if (!spk_initialized) {
-        if (!spk_init()) {
-            Serial.println("[SPK] Test FAILED - could not initialize.");
-            return;
-        }
-    }
+    spk_play_tone(720, 500, 0.5); // G4
+    start = millis();
+    while(millis() - start < 600) spk_loop();
 
-    Serial.println("[SPK] Playing test tones...");
-
-    // Play a scale of tones: C4, E4, G4, C5
-    float tones[] = {261.63f, 329.63f, 392.00f, 523.25f};
-    const char* names[] = {"C4", "E4", "G4", "C5"};
-
-    for (int i = 0; i < 4; i++) {
-        Serial.println("[SPK] Tone: " + String(names[i]) +
-                       " (" + String((int)tones[i]) + " Hz)");
-        spk_play_tone(tones[i], 500, 0.5f);
-        delay(100);  // Brief pause between tones
-    }
-
-    // Stop I2S after test so mic can use it
-    spk_stop();
-
-    Serial.println("[SPK] Test PASSED - verify you heard 4 ascending tones.");
+    spk_play_tone(800, 1000, 0.5); // C5
+    start = millis();
+    while(millis() - start < 1100) spk_loop();
+    
+    Serial.println("[SPK] Test complete.");
 }

@@ -44,10 +44,10 @@ void setup() {
     delay(500);
 
     // --- Test 3: Microphone ---
-    // Serial.println(">>> TEST 3/3: PDM Microphone");
-    // // display_message("Testing...", "Microphone (5s)");
-    // mic_test(5000);  // 5 second microphone test
-    // Serial.println();
+    Serial.println(">>> TEST 3/3: PDM Microphone");
+    // display_message("Testing...", "Microphone (5s)");
+    mic_test(5000);  // 5 second microphone test
+    Serial.println();
 
     // --- Summary ---
     Serial.println("=============================================");
@@ -59,6 +59,8 @@ void setup() {
 }
 
 void loop() {
-    // Nothing to do in loop - tests run once in setup
-    delay(1000);
+    // Keep speaker stream moving
+    // This handles buffering automatically
+    spk_loop();
+    delay(1);
 }
