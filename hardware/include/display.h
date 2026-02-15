@@ -23,4 +23,24 @@ void display_test_pattern();
 // Test the display by showing text and patterns
 void display_test();
 
+// ---- LearningBuddy Status Screens ----
+
+// Show 3-line status screen with header "LearningBuddy"
+void display_status(const char* line1, const char* line2, const char* line3);
+
+// Show recording screen with elapsed timer
+void display_recording(unsigned long elapsed_seconds);
+
+// Show WiFi connecting screen
+void display_wifi_connecting(const char* ssid);
+
+// Show setup/provisioning mode screen
+void display_setup_mode();
+
+// Show idle/ready screen with WiFi info
+void display_idle(const char* ssid, const char* ip);
+
+// Show error screen
+void display_error(const char* error_msg);
+
 #endif // DISPLAY_H

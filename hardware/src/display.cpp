@@ -1,6 +1,6 @@
 // ============================================================
-// Display Module - 128x64 SPI OLED (SSD1306) via U8g2
-// Handles all display output for the PatHacks device
+// Display Module - Updated for LearningBuddy status UI
+// 128x64 SPI OLED (SSD1306) via U8g2
 // ============================================================
 
 #include "display.h"
@@ -9,13 +9,11 @@
 #include <SPI.h>
 
 // U8g2 constructor for SSD1306 128x64 SPI
-// Using full buffer mode (F) for flicker-free updates
-// Constructor: U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI(rotation, cs, dc, reset)
 static U8G2_SSD1306_128X64_NONAME_F_4W_HW_SPI u8g2(
-    U8G2_R0,      // No rotation
-    OLED_CS,      // Chip Select
-    OLED_DC,      // Data/Command
-    OLED_RST      // Reset
+    U8G2_R0,
+    OLED_CS,
+    OLED_DC,
+    OLED_RST
 );
 
 static bool display_initialized = false;
@@ -37,7 +35,7 @@ bool display_init() {
     u8g2.sendBuffer();
 
     display_initialized = true;
-    Serial.println("[DSP] Display initialized successfully.");
+    Serial.println("[DSP] Display initialized.");
     return true;
 }
 
@@ -58,7 +56,7 @@ void display_message(const char* title, const char* message) {
 
     u8g2.clearBuffer();
 
-    // Title in a larger font
+    // Title in larger font
     u8g2.setFont(u8g2_font_7x14B_tf);
     int title_width = u8g2.getStrWidth(title);
     u8g2.drawStr((SCREEN_WIDTH - title_width) / 2, 5, title);
@@ -72,15 +70,12 @@ void display_message(const char* title, const char* message) {
     u8g2.drawStr((SCREEN_WIDTH - msg_width) / 2, 30, message);
 
     u8g2.sendBuffer();
-
-    // Restore default font
     u8g2.setFont(u8g2_font_6x10_tf);
 }
 
 void display_test_pattern() {
     if (!display_initialized) return;
 
-    // Pattern 1: Border rectangle
     u8g2.clearBuffer();
     u8g2.drawFrame(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     u8g2.setFont(u8g2_font_6x10_tf);
@@ -88,7 +83,6 @@ void display_test_pattern() {
     u8g2.sendBuffer();
     delay(1500);
 
-    // Pattern 2: Checkerboard
     u8g2.clearBuffer();
     for (int y = 0; y < SCREEN_HEIGHT; y += 8) {
         for (int x = 0; x < SCREEN_WIDTH; x += 8) {
@@ -100,7 +94,6 @@ void display_test_pattern() {
     u8g2.sendBuffer();
     delay(1000);
 
-    // Pattern 3: Concentric circles
     u8g2.clearBuffer();
     for (int r = 5; r <= 30; r += 5) {
         u8g2.drawCircle(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, r);
@@ -120,17 +113,90 @@ void display_test() {
     }
 
     Serial.println("[DSP] Showing test patterns...");
-
-    // Show welcome message
     display_message("PatHacks", "Display Test");
     delay(1500);
-
-    // Show test patterns
     display_test_pattern();
-
-    // Show result
     display_message("Display", "Test PASSED");
     delay(1000);
 
-    Serial.println("[DSP] Test PASSED - verify patterns appeared on screen.");
+    Serial.println("[DSP] Test PASSED.");
+}
+
+// ---- LearningBuddy Status Screens ----
+
+void display_status(const char* line1, const char* line2, const char* line3) {
+    if (!display_initialized) return;
+
+    u8g2.clearBuffer();
+
+    // Header bar
+    u8g2.setFont(u8g2_font_7x14B_tf);
+    u8g2.drawStr(4, 0, "LearningBuddy");
+    u8g2.drawHLine(0, 16, SCREEN_WIDTH);
+
+    // Status lines
+    u8g2.setFont(u8g2_font_6x10_tf);
+    if (line1) u8g2.drawStr(4, 20, line1);
+    if (line2) u8g2.drawStr(4, 34, line2);
+    if (line3) u8g2.drawStr(4, 48, line3);
+
+    u8g2.sendBuffer();
+}
+
+void display_recording(unsigned long elapsed_seconds) {
+    if (!display_initialized) return;
+
+    u8g2.clearBuffer();
+
+    // Recording header with dot indicator
+    u8g2.setFont(u8g2_font_7x14B_tf);
+    u8g2.drawStr(4, 0, "RECORDING");
+
+    // Blinking record dot
+    if ((millis() / 500) % 2 == 0) {
+        u8g2.drawDisc(100, 7, 5);
+    } else {
+        u8g2.drawCircle(100, 7, 5);
+    }
+
+    u8g2.drawHLine(0, 16, SCREEN_WIDTH);
+
+    // Timer
+    u8g2.setFont(u8g2_font_logisoso22_tn);
+    char timer[9];
+    unsigned long mins = elapsed_seconds / 60;
+    unsigned long secs = elapsed_seconds % 60;
+    snprintf(timer, sizeof(timer), "%02lu:%02lu", mins, secs);
+    int tw = u8g2.getStrWidth(timer);
+    u8g2.drawStr((SCREEN_WIDTH - tw) / 2, 25, timer);
+
+    // Audio level bar placeholder
+    u8g2.setFont(u8g2_font_6x10_tf);
+    u8g2.drawStr(4, 54, "Streaming audio...");
+
+    u8g2.sendBuffer();
+}
+
+void display_wifi_connecting(const char* ssid) {
+    if (!display_initialized) return;
+    char msg[32];
+    snprintf(msg, sizeof(msg), "%.20s", ssid);
+    display_status("Connecting WiFi...", msg, "Please wait...");
+}
+
+void display_setup_mode() {
+    display_status("Setup Mode", "Connect USB cable", "Run setup app");
+}
+
+void display_idle(const char* ssid, const char* ip) {
+    if (!display_initialized) return;
+
+    char line2[32], line3[32];
+    snprintf(line2, sizeof(line2), "WiFi: %.16s", ssid);
+    snprintf(line3, sizeof(line3), "IP: %s", ip);
+    display_status("Ready", line2, line3);
+}
+
+void display_error(const char* error_msg) {
+    display_status("ERROR", error_msg, "Check serial log");
 }
