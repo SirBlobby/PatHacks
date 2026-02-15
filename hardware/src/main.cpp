@@ -1,70 +1,64 @@
-#include <Arduino.h>
+// ============================================================
+// PatHacks Hardware - Central Test Program
+// Sequentially tests each hardware component:
+//   1. Display (SPI OLED)
+//   2. Speaker (I2S MAX98357 Amp)
+//   3. Microphone (PDM onboard)
+// ============================================================
 
-#include "ESP_I2S.h"
-#include "FS.h"
-#include "SD.h"
+#include <Arduino.h>
+#include "pins.h"
+// #include "display.h"
+#include "speaker.h"
+#include "microphone.h"
 
 void setup() {
-  // Create an instance of the I2SClass
-  I2SClass i2s;
+    Serial.begin(115200);
 
-  // Create variables to store the audio data
-  uint8_t *wav_buffer;
-  size_t wav_size;
+    // Wait for serial connection (useful for debugging via USB)
+    unsigned long serial_timeout = millis();
+    while (!Serial && millis() - serial_timeout < 3000) {
+        delay(10);
+    }
 
-  // Initialize the serial port
-  Serial.begin(115200);
-  while (!Serial) {
-    delay(10);
-  }
+    Serial.println();
+    Serial.println("=============================================");
+    Serial.println("  PatHacks Hardware Component Test");
+    Serial.println("  MCU: XIAO ESP32-S3 Sense");
+    Serial.println("=============================================");
+    Serial.println();
 
-  Serial.println("Initializing I2S bus...");
+    // // --- Test 1: Display ---
+    // Serial.println(">>> TEST 1/3: OLED Display");
+    // display_test();
+    // Serial.println();
 
-  // Set up the pins used for audio input
-  i2s.setPinsPdmRx(42, 41);
+    delay(500);
 
-  // start I2S at 16 kHz with 16-bits per sample
-  if (!i2s.begin(I2S_MODE_PDM_RX, 16000, I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_MONO)) {
-    Serial.println("Failed to initialize I2S!");
-    while (1); // do nothing
-  }
+    // --- Test 2: Speaker ---
+    Serial.println(">>> TEST 2/3: Speaker (MAX98357)");
+    // display_message("Testing...", "Speaker");
+    spk_test();
+    Serial.println();
 
-  Serial.println("I2S bus initialized.");
-  Serial.println("Initializing SD card...");
+    delay(500);
 
-  // Set up the pins used for SD card access
-  if(!SD.begin(21)){
-    Serial.println("Failed to mount SD Card!");
-    while (1) ;
-  }
-  Serial.println("SD card initialized.");
-  Serial.println("Recording 20 seconds of audio data...");
+    // --- Test 3: Microphone ---
+    // Serial.println(">>> TEST 3/3: PDM Microphone");
+    // // display_message("Testing...", "Microphone (5s)");
+    // mic_test(5000);  // 5 second microphone test
+    // Serial.println();
 
-  // Record 20 seconds of audio data
-  wav_buffer = i2s.recordWAV(20, &wav_size);
+    // --- Summary ---
+    Serial.println("=============================================");
+    Serial.println("  All tests complete!");
+    Serial.println("  Check serial output for PASS/FAIL status.");
+    Serial.println("=============================================");
 
-  // Create a file on the SD card
-  File file = SD.open("/arduinor_rec.wav", FILE_WRITE);
-  if (!file) {
-    Serial.println("Failed to open file for writing!");
-    return;
-  }
-
-  Serial.println("Writing audio data to file...");
-
-  // Write the audio data to the file
-  if (file.write(wav_buffer, wav_size) != wav_size) {
-    Serial.println("Failed to write audio data to file!");
-    return;
-  }
-
-  // Close the file
-  file.close();
-
-  Serial.println("Application complete.");
+    // display_message("All Tests", "Complete!");
 }
 
 void loop() {
-  delay(1000);
-  Serial.printf(".");
+    // Nothing to do in loop - tests run once in setup
+    delay(1000);
 }
