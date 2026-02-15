@@ -142,6 +142,9 @@ void setup() {
 // Main Loop
 // ============================================================
 void loop() {
+    // Advance the blink animation state machine every frame
+    display_blink_tick();
+
     // Always process serial commands (allows re-provisioning anytime)
     bool serial_cmd = serial_proto_loop();
 
@@ -217,7 +220,7 @@ void loop() {
                 }
 
                 if (!sio_is_connected()) {
-                    display_status("Connecting...", server_host, "Socket.IO");
+                    display_face(EXPR_CONFUSED, "Connecting...");
                     sio_connect(server_host, server_port);
                 }
             }
@@ -418,7 +421,7 @@ static void on_sio_connected() {
     String payload = "{\"key\":\"" + key + "\"}";
     sio_emit("auth", payload.c_str());
 
-    display_status("Connected", "Authenticating...", "");
+    display_face(EXPR_NEUTRAL, "Authenticating...");
 }
 
 static void on_sio_disconnected() {
@@ -446,7 +449,7 @@ static void on_sio_event(const char* event, const char* payload) {
     // --- auth_ok ---
     if (strcmp(event, "auth_ok") == 0) {
         Serial.println("[MAIN] Authenticated successfully!");
-        display_status("Authenticated!", "A=Record  B=Voice", "Ready");
+        display_face(EXPR_LOVE, "Connected!");
         change_state(STATE_AUTHENTICATED);
         return;
     }
@@ -675,7 +678,7 @@ static void stop_recording() {
     sio_emit("rec_stop", "{}");
 
     change_state(STATE_IDLE);
-    display_status("Recording saved", "Processing...", "");
+    display_face(EXPR_HAPPY, "Recording saved!");
 }
 
 // ============================================================
@@ -733,5 +736,5 @@ static void voice_call_end() {
     }
 
     change_state(STATE_IDLE);
-    display_status("Call ended", "", "");
+    display_face(EXPR_NEUTRAL, "Call ended");
 }

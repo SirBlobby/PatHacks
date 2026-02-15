@@ -76,6 +76,7 @@ def create_app() -> Flask:
     from src.routes.settings import settings_bp
     from src.routes.voice import voice_bp
     from src.routes.recordings import recordings_bp, register_socketio_events
+    from src.routes.voice_call import register_voice_call_events
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -89,6 +90,9 @@ def create_app() -> Flask:
 
     # ── Register Socket.IO events for device audio streaming ──
     register_socketio_events(socketio)
+
+    # ── Register Socket.IO events for voice calls ──
+    register_voice_call_events(socketio)
 
     # ── Global error handlers (return JSON, not HTML) ──
     @app.errorhandler(Exception)
