@@ -6,12 +6,10 @@
 // Initialize the PDM microphone via I2S
 bool mic_init();
 
-// Read a single audio sample from the microphone
-// Returns the sample value, or 0 if no valid sample
-int mic_read_sample();
+// Process microphone data loop (copy to output)
+void mic_loop();
 
-// Test the microphone by reading samples and printing to Serial
-// duration_ms: how long to run the test in milliseconds
+// Test the microphone by outputting CSV data to Serial for a duration
 void mic_test(unsigned long duration_ms);
 
 #endif // MICROPHONE_H

@@ -33,13 +33,13 @@ void setup() {
     // display_test();
     // Serial.println();
 
-    delay(500);
+    // delay(500);
 
-    // --- Test 2: Speaker ---
-    Serial.println(">>> TEST 2/3: Speaker (MAX98357)");
-    // display_message("Testing...", "Speaker");
-    spk_test();
-    Serial.println();
+    // // --- Test 2: Speaker ---
+    // Serial.println(">>> TEST 2/3: Speaker (MAX98357)");
+    // // display_message("Testing...", "Speaker");
+    // spk_test();
+    // Serial.println();
 
     delay(500);
 
@@ -61,6 +61,7 @@ void setup() {
 void loop() {
     // Keep speaker stream moving
     // This handles buffering automatically
-    spk_loop();
+    // spk_loop();
+    mic_loop();
     delay(1);
 }

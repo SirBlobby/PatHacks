@@ -29,6 +29,7 @@ bool spk_init() {
     // Configure I2S Output
     auto config = out.defaultConfig(TX_MODE);
     config.copyFrom(info); 
+    config.i2s_format = I2S_LSB_FORMAT; // Adafruit MAX98357A expects LSB format
     config.pin_bck = SPK_BCLK;
     config.pin_ws = SPK_LRC;
     config.pin_data = SPK_DIN; 

@@ -1,90 +1,67 @@
 // ============================================================
 // Microphone Module - PDM Microphone on XIAO ESP32-S3 Sense
-// Uses the onboard digital microphone via I2S in PDM mode
+// Uses pschatzmann/arduino-audio-tools for PDM I2S Input
 // ============================================================
 
+#include "AudioTools.h"
 #include "microphone.h"
 #include "pins.h"
-#include <I2S.h>
+
+// Define audio format for PDM mic (16kHz, 1 channel, 16-bit)
+AudioInfo mic_info(16000, 1, 16);
+
+I2SStream i2sStream;                // Access I2S as stream
+CsvOutput<int16_t> csvOutput(Serial); // Output as CSV to Serial
+StreamCopy micCopier(csvOutput, i2sStream); // Copies audio from I2S to CSV output
 
 static bool mic_initialized = false;
 
 bool mic_init() {
     if (mic_initialized) return true;
+    
+    Serial.println("[MIC] Initializing PDM microphone (AudioTools)...");
 
-    Serial.println("[MIC] Initializing PDM microphone...");
-
-    // Configure I2S pins for PDM microphone
-    // setAllPins(BCLK, WS/PDM_CLK, DIN/PDM_DATA, DOUT, MCK)
-    // -1 = unused pin
-    I2S.setAllPins(-1, MIC_PDM_CLK, MIC_PDM_DATA, -1, -1);
-
-    // Start I2S in PDM mono mode at 16kHz, 16-bit
-    if (!I2S.begin(PDM_MONO_MODE, SAMPLE_RATE, BITS_PER_SAMPLE)) {
-        Serial.println("[MIC] ERROR: Failed to initialize I2S!");
+    // Configure I2S for PDM RX Mode
+    auto config = i2sStream.defaultConfig(RX_MODE);
+    config.copyFrom(mic_info);
+    
+    config.signal_type = PDM;
+    // Critical PDM Settings for ESP32-S3
+    // On ESP32 PDM: Clock is WS pin, Data is DATA pin
+    config.pin_ws = MIC_PDM_CLK;        // GPIO 42 (CLK)
+    config.pin_data = MIC_PDM_DATA;     // GPIO 41 (DATA)
+    config.is_master = true;
+    config.pin_bck = -1;                // BCLK unused in PDM
+    
+    if (!i2sStream.begin(config)) {
+        Serial.println("[MIC] ERROR: Failed to initialize I2S stream!");
         return false;
     }
 
+    // Initialize CSV Output
+    csvOutput.begin(mic_info);
+    
     mic_initialized = true;
-    Serial.println("[MIC] PDM microphone initialized successfully.");
+    Serial.println("[MIC] Microphone initialized. streaming CSV data...");
     return true;
 }
 
-int mic_read_sample() {
-    if (!mic_initialized) return 0;
-
-    int sample = I2S.read();
-
-    // Filter out invalid/silence samples
-    if (sample == 0 || sample == -1 || sample == 1) {
-        return 0;
+void mic_test(unsigned long duration_ms) {
+    if (!mic_initialized) mic_init();
+    
+    Serial.println("--- START MIC DATA ---");
+    
+    unsigned long start = millis();
+    while (millis() - start < duration_ms) {
+        Serial.print(">mic:");
+        micCopier.copy();
     }
-    return sample;
+    
+    Serial.println("--- END MIC DATA ---");
 }
 
-void mic_test(unsigned long duration_ms) {
-    Serial.println("[MIC] === Microphone Test ===");
-
-    if (!mic_initialized) {
-        if (!mic_init()) {
-            Serial.println("[MIC] Test FAILED - could not initialize.");
-            return;
-        }
-    }
-
-    Serial.println("[MIC] Reading samples for " + String(duration_ms / 1000) + " seconds...");
-    Serial.println("[MIC] Speak into the microphone to see values.");
-
-    unsigned long start = millis();
-    int sample_count = 0;
-    int max_sample = 0;
-    int min_sample = 0;
-
-    while (millis() - start < duration_ms) {
-        int sample = mic_read_sample();
-        if (sample != 0) {
-            sample_count++;
-            if (sample > max_sample) max_sample = sample;
-            if (sample < min_sample) min_sample = sample;
-
-            // Print every 100th valid sample to avoid flooding serial
-            if (sample_count % 100 == 0) {
-                Serial.println("[MIC] Sample: " + String(sample));
-            }
-        }
-    }
-
-    // Stop I2S after test so speaker can use it
-    I2S.end();
-    mic_initialized = false;
-
-    Serial.println("[MIC] Test complete.");
-    Serial.println("[MIC] Total valid samples: " + String(sample_count));
-    Serial.println("[MIC] Range: [" + String(min_sample) + ", " + String(max_sample) + "]");
-
-    if (sample_count > 0) {
-        Serial.println("[MIC] Test PASSED");
-    } else {
-        Serial.println("[MIC] Test FAILED - no valid samples received.");
+void mic_loop() {
+    if (mic_initialized) {
+        micCopier.copy();
     }
 }
