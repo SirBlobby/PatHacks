@@ -1,10 +1,12 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import { onMount } from "svelte";
+    import { logout } from "$lib/api";
 
     onMount(() => {
-        // In a real app, clear tokens/cookies here
+        logout();
         setTimeout(() => {
-            window.location.href = "/signin";
+            goto("/signin");
         }, 1500);
     });
 </script>

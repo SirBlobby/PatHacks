@@ -1,15 +1,23 @@
-fastapi
-uvicorn
-pymongo
-motor
-python-multipart
-python-jose[cryptography]
-passlib[argon2]
-argon2-cffi
+# Core
+flask==3.1.1
+flask-cors==5.0.1
+flask-jwt-extended==4.7.1
+pymongo==4.12.1
+google-genai==1.14.0
+python-dotenv==1.1.0
+bcrypt==4.3.0
+gunicorn==23.0.0
+
+# Document Processing
+pypdf
+pdf2image
+pytesseract
+python-docx
+pandas
+openpyxl
+pyyaml
+beautifulsoup4
+Pillow
+
+# Audio Transcription
 faster-whisper
-google-generativeai
-python-dotenv
-pydantic
-pydantic-settings
-uuid
-numpy
