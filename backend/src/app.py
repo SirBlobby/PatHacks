@@ -74,9 +74,10 @@ def create_app() -> Flask:
     from src.routes.chat import chat_bp
     from src.routes.profile import profile_bp
     from src.routes.settings import settings_bp
-    from src.routes.voice import voice_bp
+    from src.routes.voice import voice_bp, general_voice_bp
     from src.routes.recordings import recordings_bp, register_socketio_events
     from src.routes.voice_call import register_voice_call_events
+    from src.routes.general_chat import general_chat_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(dashboard_bp)
@@ -87,6 +88,8 @@ def create_app() -> Flask:
     app.register_blueprint(settings_bp)
     app.register_blueprint(voice_bp)
     app.register_blueprint(recordings_bp)
+    app.register_blueprint(general_chat_bp)
+    app.register_blueprint(general_voice_bp)
 
     # ── Register Socket.IO events for device audio streaming ──
     register_socketio_events(socketio)

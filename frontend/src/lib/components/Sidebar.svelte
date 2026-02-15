@@ -18,6 +18,11 @@
             icon: "mdi:folder-multiple-outline",
         },
         {
+            href: "/panel/chat",
+            label: "AI Chat",
+            icon: "mdi:robot-outline",
+        },
+        {
             href: "/panel/plans",
             label: "Plans",
             icon: "mdi:rocket-launch-outline",

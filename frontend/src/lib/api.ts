@@ -287,10 +287,96 @@ export interface VoiceSessionInfo {
 }
 
 /**
- * Get a signed URL and RAG context for an ElevenLabs voice conversation.
+ * Get a signed URL and RAG context for an ElevenLabs voice conversation (per-source).
  */
 export async function getVoiceSignedUrl(sourceId: string): Promise<VoiceSessionInfo> {
     return request<VoiceSessionInfo>(`/sources/${sourceId}/voice/signed-url`);
+}
+
+// ── General Chat (all sources) ──
+
+export async function sendGeneralChat(message: string) {
+    return request('/chat', {
+        method: 'POST',
+        body: JSON.stringify({ message }),
+    });
+}
+
+export async function getGeneralChatHistory() {
+    return request('/chat/history');
+}
+
+export async function clearGeneralChatHistory() {
+    return request('/chat/history', { method: 'DELETE' });
+}
+
+/**
+ * Stream a general chat response via SSE (all user sources).
+ */
+export async function streamGeneralChat(
+    message: string,
+    onChunk: (chunk: string) => void
+): Promise<string> {
+    const token = getToken();
+    const res = await fetch(`${API_BASE}/chat/stream`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ message }),
+    });
+
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Stream failed');
+    }
+
+    const reader = res.body?.getReader();
+    const decoder = new TextDecoder();
+    let fullResponse = '';
+
+    if (reader) {
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const text = decoder.decode(value, { stream: true });
+            const lines = text.split('\n');
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const parsed = JSON.parse(line.slice(6));
+                        if (parsed.chunk) {
+                            fullResponse += parsed.chunk;
+                            onChunk(parsed.chunk);
+                        }
+                        if (parsed.error) {
+                            throw new Error(parsed.error);
+                        }
+                    } catch (e) {
+                        // ignore parse errors on incomplete chunks
+                    }
+                }
+            }
+        }
+    }
+
+    return fullResponse;
+}
+
+export interface GeneralVoiceSessionInfo {
+    signed_url: string;
+    system_prompt: string;
+    source_titles: string[];
+    agent_id: string;
+}
+
+/**
+ * Get a signed URL for an ElevenLabs voice conversation across ALL user sources.
+ */
+export async function getGeneralVoiceSignedUrl(): Promise<GeneralVoiceSessionInfo> {
+    return request<GeneralVoiceSessionInfo>('/chat/voice/signed-url');
 }
 
 // ── Recordings ──

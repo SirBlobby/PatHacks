@@ -166,6 +166,130 @@ def get_context_for_query(
     return "\n".join(context_parts)
 
 
+def search_all_user_sources(
+    user_id: str,
+    query: str,
+    n_results: int = 10,
+) -> list[dict]:
+    """
+    Perform a vector search across ALL sources belonging to a user.
+    Uses MongoDB Atlas Vector Search ($vectorSearch aggregation stage).
+    """
+    db = get_db()
+
+    # Get all source IDs for this user
+    user_sources = list(
+        db.sources.find({"user_id": user_id, "status": "processed"}, {"_id": 1, "title": 1})
+    )
+    if not user_sources:
+        return []
+
+    source_ids = [str(s["_id"]) for s in user_sources]
+    source_titles = {str(s["_id"]): s.get("title", "Untitled") for s in user_sources}
+
+    query_embedding = generate_embedding(query)
+
+    pipeline = [
+        {
+            "$vectorSearch": {
+                "index": Config.VECTOR_INDEX_NAME,
+                "path": "embedding",
+                "queryVector": query_embedding,
+                "numCandidates": n_results * 10,
+                "limit": n_results,
+                "filter": {"source_id": {"$in": source_ids}},
+            }
+        },
+        {
+            "$project": {
+                "_id": 0,
+                "content": 1,
+                "chunk_index": 1,
+                "source_id": 1,
+                "title": 1,
+                "score": {"$meta": "vectorSearchScore"},
+            }
+        },
+    ]
+
+    results = list(db.lecture_chunks.aggregate(pipeline))
+
+    # Enrich results with source titles
+    for r in results:
+        sid = r.get("source_id", "")
+        if sid in source_titles:
+            r["source_title"] = source_titles[sid]
+
+    return results
+
+
+def get_context_for_all_sources(
+    user_id: str,
+    query: str,
+    n_results: int = 10,
+) -> str:
+    """
+    Retrieve relevant context across ALL of a user's sources.
+    Returns a formatted string of the most relevant chunks with source attribution.
+    """
+    results = search_all_user_sources(user_id, query, n_results)
+
+    if not results:
+        # Fallback: keyword search across all user source chunks
+        db = get_db()
+        user_sources = list(
+            db.sources.find({"user_id": user_id, "status": "processed"}, {"_id": 1, "title": 1})
+        )
+        source_ids = [str(s["_id"]) for s in user_sources]
+        source_titles = {str(s["_id"]): s.get("title", "Untitled") for s in user_sources}
+
+        if source_ids:
+            search_terms = [t for t in query.split() if len(t) > 3]
+            if search_terms:
+                keyword_filter = {
+                    "source_id": {"$in": source_ids},
+                    "$or": [
+                        {"content": {"$regex": term, "$options": "i"}}
+                        for term in search_terms
+                    ],
+                }
+                results = list(
+                    db.lecture_chunks.find(
+                        keyword_filter,
+                        {"_id": 0, "content": 1, "chunk_index": 1, "source_id": 1},
+                    ).limit(n_results)
+                )
+                for r in results:
+                    sid = r.get("source_id", "")
+                    if sid in source_titles:
+                        r["source_title"] = source_titles[sid]
+
+        # Fallback 2: grab first chunks from each source
+        if not results and source_ids:
+            for sid in source_ids[:5]:
+                chunks = list(
+                    db.lecture_chunks.find(
+                        {"source_id": sid},
+                        {"_id": 0, "content": 1, "chunk_index": 1, "source_id": 1},
+                    )
+                    .sort("chunk_index", 1)
+                    .limit(2)
+                )
+                for c in chunks:
+                    c["source_title"] = source_titles.get(sid, "Untitled")
+                results.extend(chunks)
+
+    context_parts = []
+    for i, r in enumerate(results, 1):
+        source_label = r.get("source_title", r.get("title", "Unknown"))
+        context_parts.append(
+            f"--- Chunk {i} (from: {source_label}) ---\n"
+            f"{r['content']}\n"
+        )
+
+    return "\n".join(context_parts)
+
+
 def delete_source_chunks(source_id: str) -> int:
     """Delete all vector chunks for a source. Returns count deleted."""
     db = get_db()

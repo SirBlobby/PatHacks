@@ -93,6 +93,54 @@ def chat_with_context_stream(
             yield chunk.text
 
 
+def chat_with_context_custom(
+    user_message: str,
+    system_prompt: str,
+    chat_history: list[dict] | None = None,
+) -> str:
+    """Send a message to Gemini with a custom system prompt and return the full response."""
+    client = _get_client()
+
+    contents = _build_contents(chat_history, user_message)
+
+    response = client.models.generate_content(
+        model=Config.GEMINI_CHAT_MODEL,
+        contents=contents,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            temperature=0.7,
+            max_output_tokens=2048,
+        ),
+    )
+
+    return response.text
+
+
+def chat_with_context_stream_custom(
+    user_message: str,
+    system_prompt: str,
+    chat_history: list[dict] | None = None,
+) -> Generator[str, None, None]:
+    """Stream a chat response from Gemini with a custom system prompt."""
+    client = _get_client()
+
+    contents = _build_contents(chat_history, user_message)
+
+    response_stream = client.models.generate_content_stream(
+        model=Config.GEMINI_CHAT_MODEL,
+        contents=contents,
+        config=types.GenerateContentConfig(
+            system_instruction=system_prompt,
+            temperature=0.7,
+            max_output_tokens=2048,
+        ),
+    )
+
+    for chunk in response_stream:
+        if chunk.text:
+            yield chunk.text
+
+
 def summarize_transcript(transcript: str, title: str = "") -> str:
     """Generate a structured summary of a lecture transcript."""
     client = _get_client()

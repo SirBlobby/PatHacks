@@ -76,27 +76,34 @@ def _write_wav_to_buffer(pcm_data: bytes) -> bytes:
     return buf.getvalue()
 
 
-def _get_user_latest_source(user_id: str) -> dict | None:
-    """Get the user's most recently created source (for RAG context)."""
+def _get_user_source_titles(user_id: str) -> list[str]:
+    """Get all source titles for a user."""
     db = get_db()
-    source = db.sources.find_one(
-        {"user_id": user_id, "status": "ready"},
-        sort=[("created_at", -1)],
+    sources = list(
+        db.sources.find({"user_id": user_id, "status": "processed"}, {"title": 1})
     )
-    return source
+    return [s.get("title", "Untitled") for s in sources]
 
 
-def _get_rag_context(source_id: str, query: str, source_title: str) -> str:
-    """Retrieve RAG context from a source for the voice query."""
-    context = vector_search.get_context_for_query(source_id, query, n_results=5)
+def _get_all_sources_rag_context(user_id: str, query: str) -> str:
+    """Retrieve RAG context across ALL user sources for the voice query."""
+    context = vector_search.get_context_for_all_sources(user_id, query, n_results=5)
 
     if not context.strip():
-        # Fallback: get raw content
+        # Fallback: get raw content snippets from all sources
         db = get_db()
-        from bson import ObjectId
-        source = db.sources.find_one({"_id": ObjectId(source_id)})
-        if source and source.get("content"):
-            context = source["content"][:4000]
+        sources = list(
+            db.sources.find(
+                {"user_id": user_id, "status": "processed"},
+                {"title": 1, "content": 1},
+            ).limit(5)
+        )
+        parts = []
+        for s in sources:
+            content = s.get("content", "")
+            if content:
+                parts.append(f"--- {s.get('title', 'Untitled')} ---\n{content[:2000]}\n")
+        context = "\n".join(parts) if parts else ""
 
     return context
 
@@ -197,8 +204,8 @@ def _convert_to_pcm(audio_data: bytes, input_format: str = "mp3") -> bytes | Non
         return None
 
 
-def _build_voice_system_prompt(context: str, source_title: str) -> str:
-    """Build system prompt for voice conversation with RAG context."""
+def _build_voice_system_prompt(context: str, source_titles: list[str]) -> str:
+    """Build system prompt for voice conversation with RAG context from all sources."""
     base = (
         "You are LearningBuddy AI, a friendly voice tutor helping a student study. "
         "Keep your answers SHORT and conversational since this is spoken dialogue "
@@ -207,11 +214,13 @@ def _build_voice_system_prompt(context: str, source_title: str) -> str:
         "If you don't know the answer, say so briefly."
     )
 
-    if context and source_title:
+    if context and source_titles:
+        titles_str = ", ".join(source_titles)
         return (
             f"{base}\n\n"
-            f"The student is studying: {source_title}\n"
-            f"Answer based on this context when relevant:\n"
+            f"The student has the following study materials: {titles_str}\n"
+            f"Answer based on this context when relevant. "
+            f"Mention which source the info comes from if helpful.\n"
             f"=== CONTEXT ===\n{context}\n=== END CONTEXT ==="
         )
 
@@ -219,11 +228,12 @@ def _build_voice_system_prompt(context: str, source_title: str) -> str:
 
 
 def _process_voice_call(sid: str, socketio, pcm_data: bytes,
-                        source_id: str | None, source_title: str,
+                        user_id: str, source_titles: list[str],
                         chat_history: list):
     """
     Background pipeline: STT -> LLM -> TTS -> emit response.
     Runs in a daemon thread to avoid blocking the Socket.IO event loop.
+    Queries across ALL user sources for RAG context.
     """
     try:
         # ── Step 1: Speech-to-Text ──
@@ -237,16 +247,16 @@ def _process_voice_call(sid: str, socketio, pcm_data: bytes,
 
         print(f"[VoiceCall] STT result: \"{user_text}\"")
 
-        # ── Step 2: Get RAG context ──
+        # ── Step 2: Get RAG context from ALL sources ──
         context = ""
-        if source_id:
+        if user_id:
             try:
-                context = _get_rag_context(source_id, user_text, source_title)
+                context = _get_all_sources_rag_context(user_id, user_text)
             except Exception as e:
                 print(f"[VoiceCall] RAG context error: {e}")
 
         # ── Step 3: LLM response ──
-        system_prompt = _build_voice_system_prompt(context, source_title)
+        system_prompt = _build_voice_system_prompt(context, source_titles)
         print(f"[VoiceCall] Generating LLM response...")
 
         # Use Gemini chat with context
@@ -254,7 +264,7 @@ def _process_voice_call(sid: str, socketio, pcm_data: bytes,
             user_message=user_text,
             context=context,
             chat_history=chat_history[-6:],  # Last 3 exchanges
-            source_title=source_title,
+            source_title=", ".join(source_titles) if source_titles else "",
         )
 
         if not llm_response:
@@ -316,20 +326,18 @@ def register_voice_call_events(socketio):
         dev = _authenticated_devices[sid]
         user_id = dev["user_id"]
 
-        # Find the user's most recent source for RAG context
-        source = _get_user_latest_source(user_id)
-        source_id = str(source["_id"]) if source else None
-        source_title = source.get("title", "") if source else ""
+        # Get all source titles for this user (for system prompt)
+        source_titles = _get_user_source_titles(user_id)
 
         _active_calls[sid] = {
             "audio_buffer": bytearray(),
-            "source_id": source_id,
-            "source_title": source_title,
+            "user_id": user_id,
+            "source_titles": source_titles,
             "chat_history": [],
         }
 
         socketio.emit("call_started", {}, to=sid)
-        context_msg = f" (source: {source_title})" if source_title else " (no source, general knowledge)"
+        context_msg = f" ({len(source_titles)} sources)" if source_titles else " (no sources, general knowledge)"
         print(f"[VoiceCall] Call started: sid={sid}{context_msg}")
 
     @socketio.on("call_audio")
@@ -376,8 +384,8 @@ def register_voice_call_events(socketio):
                 sid,
                 socketio,
                 pcm_data,
-                call["source_id"],
-                call["source_title"],
+                call.get("user_id", ""),
+                call.get("source_titles", []),
                 list(call["chat_history"]),  # Copy to avoid race
             ),
             daemon=True,

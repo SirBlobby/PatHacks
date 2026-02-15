@@ -2,10 +2,10 @@
     import { onMount } from "svelte";
     import { Conversation } from "@elevenlabs/client";
     import Icon from "@iconify/svelte";
-    import { getVoiceSignedUrl } from "$lib/api";
+    import { getVoiceSignedUrl, getGeneralVoiceSignedUrl } from "$lib/api";
     import { deskpet } from "$lib/stores/deskpet";
 
-    let { sourceId }: { sourceId: string } = $props();
+    let { sourceId }: { sourceId?: string } = $props();
 
     // Connection state
     let status = $state<"idle" | "connecting" | "connected" | "error">("idle");
@@ -59,7 +59,9 @@
         transcript = [];
 
         try {
-            const sessionInfo = await getVoiceSignedUrl(sourceId);
+            const sessionInfo = sourceId
+                ? await getVoiceSignedUrl(sourceId)
+                : await getGeneralVoiceSignedUrl();
 
             // Request microphone permission
             await navigator.mediaDevices.getUserMedia({ audio: true });
