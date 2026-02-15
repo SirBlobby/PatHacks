@@ -37,18 +37,18 @@
 
         ctx.strokeStyle = accentColor;
         ctx.fillStyle = accentColor;
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
 
         // Clear
         ctx.clearRect(0, 0, w, h);
 
-        const gridSize = 30;
+        const gridSize = 60;
 
         // Generate sparse circuit lines
         // We'll focus slightly more on edges by filtering density
-        const numLines = Math.floor((w * h) / (gridSize * gridSize) / 8);
+        const numLines = Math.floor((w * h) / (gridSize * gridSize) / 6);
 
         for (let i = 0; i < numLines; i++) {
             // Pick a start point
@@ -57,7 +57,7 @@
 
             // Start node
             ctx.beginPath();
-            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.beginPath();
@@ -97,10 +97,10 @@
 
             // End node (hollow for variety)
             ctx.beginPath();
-            ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+            ctx.arc(x, y, 5, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
             ctx.fillStyle = getComputedStyle(document.body).backgroundColor; // Clear center
             ctx.fill();
             ctx.fillStyle = accentColor; // Reset fill

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { deskpet } from "$lib/stores/deskpet";
 
     let canvas: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D | null;
@@ -7,7 +8,108 @@
     let eyeOffsetY = 0;
     let blinkState = 0; // 0: open, 1: closing, 2: closed, 3: opening
     let blinkTimer = 0;
-    let expression = "neutral"; // neutral, happy, surprised, sleepy
+    let expression = "neutral";
+
+    // Subscribe to store
+    deskpet.subscribe((state) => {
+        expression = state.expression;
+    });
+
+    // Particle System
+    interface Particle {
+        x: number;
+        y: number;
+        vx: number;
+        vy: number;
+        life: number;
+        size: number;
+        type: "star" | "heart";
+        color: string;
+    }
+    let particles: Particle[] = [];
+
+    function createParticle(
+        x: number,
+        y: number,
+        type: "star" | "heart" = "star",
+    ) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 0.5 + Math.random() * 1.5;
+        const color = type === "heart" ? "#FF3366" : "#FFD700";
+
+        particles.push({
+            x,
+            y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 0.5,
+            life: 1.0,
+            size: 5 + Math.random() * 5,
+            type,
+            color,
+        });
+    }
+
+    function updateParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.life -= 0.02;
+            p.size *= 0.98;
+
+            if (p.life <= 0) {
+                particles.splice(i, 1);
+            }
+        }
+    }
+
+    function drawStar(
+        ctx: CanvasRenderingContext2D,
+        cx: number,
+        cy: number,
+        spikes: number,
+        outerRadius: number,
+        innerRadius: number,
+    ) {
+        let rot = (Math.PI / 2) * 3;
+        let x = cx;
+        let y = cy;
+        let step = Math.PI / spikes;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - outerRadius);
+        for (let i = 0; i < spikes; i++) {
+            x = cx + Math.cos(rot) * outerRadius;
+            y = cy + Math.sin(rot) * outerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+
+            x = cx + Math.cos(rot) * innerRadius;
+            y = cy + Math.sin(rot) * innerRadius;
+            ctx.lineTo(x, y);
+            rot += step;
+        }
+        ctx.lineTo(cx, cy - outerRadius);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawParticles() {
+        if (!ctx) return;
+        particles.forEach((p) => {
+            ctx!.save();
+            ctx!.globalAlpha = p.life;
+            ctx!.fillStyle = p.color;
+            if (p.type === "star") {
+                drawStar(ctx!, p.x, p.y, 5, p.size, p.size / 2);
+            } else {
+                ctx!.beginPath();
+                ctx!.arc(p.x, p.y, p.size / 2, 0, Math.PI * 2);
+                ctx!.fill();
+            }
+            ctx!.restore();
+        });
+    }
 
     // Dragging Logic
     let container: HTMLDivElement;
@@ -17,35 +119,96 @@
     let isMobile = false;
     let hasInitialized = false;
 
+    function drawHeart(x: number, y: number, size: number) {
+        if (!ctx) return;
+        ctx.save();
+        ctx.beginPath();
+        const topCurveHeight = size * 0.3;
+        ctx.moveTo(x, y + topCurveHeight);
+        ctx.bezierCurveTo(
+            x,
+            y,
+            x - size / 2,
+            y,
+            x - size / 2,
+            y + topCurveHeight,
+        );
+        ctx.bezierCurveTo(
+            x - size / 2,
+            y + (size + topCurveHeight) / 2,
+            x,
+            y + (size + topCurveHeight) / 2,
+            x,
+            y + size,
+        );
+        ctx.bezierCurveTo(
+            x,
+            y + (size + topCurveHeight) / 2,
+            x + size / 2,
+            y + (size + topCurveHeight) / 2,
+            x + size / 2,
+            y + topCurveHeight,
+        );
+        ctx.bezierCurveTo(x + size / 2, y, x, y, x, y + topCurveHeight);
+        ctx.fillStyle = "#FF3366";
+        ctx.fill();
+        ctx.restore();
+    }
+
     function drawEye(x: number, y: number, size: number) {
         if (!ctx) return;
 
-        ctx.fillStyle = "#FFFFFF"; // White eyes
+        if (expression === "love") {
+            const pulse = 1 + Math.sin(Date.now() / 150) * 0.15;
+            drawHeart(x, y - size / 2, size * 1.5 * pulse);
+            return;
+        }
+
+        ctx.fillStyle = "#FFFFFF";
         ctx.beginPath();
 
-        // Make eyes larger
         const eyeScale = 1.5;
         const s = size * eyeScale;
 
         let height = s;
         if (blinkState !== 0) {
-            if (blinkState === 2)
-                height = 4; // Closed thick line
-            else height = s * 0.5; // Half open
+            if (blinkState === 2) height = 4;
+            else height = s * 0.5;
         }
 
         if (expression === "happy") {
-            // Happy inverted arch
             ctx.lineWidth = 6;
             ctx.strokeStyle = "#FFFFFF";
             ctx.beginPath();
             ctx.arc(x, y + 5, s / 2, Math.PI, 0);
             ctx.stroke();
+        } else if (expression === "surprised") {
+            ctx.arc(x, y, s / 1.8, 0, Math.PI * 2);
+            ctx.fill();
         } else {
-            // Square eye with slight rounding
+            // Simple square eye (Old Style) - No pupils/glints
             ctx.roundRect(x - s / 2, y - height / 2, s, height, 4);
             ctx.fill();
         }
+    }
+
+    function drawCheeks(x: number, y: number, spacing: number) {
+        if (
+            !ctx ||
+            (expression !== "blush" &&
+                expression !== "love" &&
+                expression !== "happy")
+        )
+            return;
+
+        // Simple flat blush
+        ctx.fillStyle = "rgba(255, 100, 100, 0.4)";
+        const size = 15;
+        [x - spacing - 10, x + spacing + 10].forEach((cx) => {
+            ctx!.beginPath();
+            ctx!.arc(cx, y + 25, size, 0, Math.PI * 2);
+            ctx!.fill();
+        });
     }
 
     function drawEyebrow(x: number, y: number, size: number, angle: number) {
@@ -53,8 +216,8 @@
         ctx.save();
         ctx.translate(x, y);
         ctx.rotate(angle);
-        ctx.fillStyle = "#FFFFFF"; // White eyebrows
-        ctx.fillRect(-size / 2, -size / 10, size, size / 5);
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(-size / 2, -size / 10, size, size / 5); // Simple rect
         ctx.fill();
         ctx.restore();
     }
@@ -65,21 +228,16 @@
         const w = canvas.width;
         const h = canvas.height;
 
-        // Get colors from CSS variables
         const styles = getComputedStyle(document.documentElement);
-        // Default to orange if variable is not set (failsafe)
         const caseColor =
             styles.getPropertyValue("--deskpet-case").trim() || "#FF9F1C";
 
-        // Flat Case Color
         ctx.fillStyle = caseColor;
 
-        // Main Case Body (Simple Rounded Rect)
         ctx.beginPath();
         ctx.roundRect(10, 25, w - 20, h - 35, 30);
         ctx.fill();
 
-        // Screen (Simple Rounded Rect, no bezel shading)
         const bezel = 18;
         ctx.beginPath();
         ctx.roundRect(
@@ -97,10 +255,8 @@
         if (!ctx || !canvas) return;
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         drawCase();
 
-        // Screen area for clipping eyes
         const bezel = 18;
         ctx.save();
         ctx.beginPath();
@@ -113,10 +269,6 @@
         );
         ctx.clip();
 
-        // Screen inner glow (subtle, flat)
-        ctx.shadowBlur = 0;
-
-        // Draw eyes
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2 + 10;
         const eyeSpacing = 35;
@@ -125,20 +277,23 @@
         const currentEyeX = centerX + eyeOffsetX;
         const currentEyeY = centerY + eyeOffsetY;
 
+        drawCheeks(currentEyeX, currentEyeY, eyeSpacing);
+
         drawEye(currentEyeX - eyeSpacing, currentEyeY, eyeSize);
         drawEye(currentEyeX + eyeSpacing, currentEyeY, eyeSize);
 
-        // Draw eyebrows
-        if (expression === "neutral") {
+        if (expression === "neutral" || expression === "blush") {
             drawEyebrow(currentEyeX - eyeSpacing, currentEyeY - 25, 20, 0);
             drawEyebrow(currentEyeX + eyeSpacing, currentEyeY - 25, 20, 0);
+        } else if (expression === "confused") {
+            drawEyebrow(currentEyeX - eyeSpacing, currentEyeY - 30, 20, -0.2);
+            drawEyebrow(currentEyeX + eyeSpacing, currentEyeY - 20, 20, 0.2);
         }
 
         ctx.restore();
     }
 
     function update() {
-        // Random blinking
         blinkTimer++;
         if (blinkState === 0 && blinkTimer > 150 + Math.random() * 200) {
             blinkState = 1;
@@ -151,7 +306,21 @@
             blinkTimer = 0;
         }
 
+        if (expression === "love" || expression === "happy") {
+            if (Math.random() < 0.08) {
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                createParticle(
+                    cx + (Math.random() - 0.5) * 120,
+                    cy + (Math.random() - 0.5) * 60,
+                    "star",
+                );
+            }
+        }
+
+        updateParticles();
         drawFace();
+        drawParticles();
         requestAnimationFrame(update);
     }
 
@@ -161,7 +330,6 @@
         const centerX = rect.left + rect.width / 2;
         const centerY = rect.top + rect.height / 2;
 
-        // Calculate look direction bounded
         const maxOffset = 10;
         const dx = (e.clientX - centerX) / (window.innerWidth / 2);
         const dy = (e.clientY - centerY) / (window.innerHeight / 2);
@@ -203,22 +371,20 @@
         const h = window.innerHeight;
         const cw = container.offsetWidth;
         const ch = container.offsetHeight;
-        const m = 32; // margin 32px
+        const m = 32;
 
-        // Define 8 points
         const points = [
-            { x: m, y: m }, // TL
-            { x: (w - cw) / 2, y: m }, // TC
-            { x: w - cw - m, y: m }, // TR
-            { x: m, y: (h - ch) / 2 }, // ML
-            { x: w - cw - m, y: (h - ch) / 2 }, // MR
-            { x: m, y: h - ch - m }, // BL
-            { x: (w - cw) / 2, y: h - ch - m }, // BC
-            { x: w - cw - m, y: h - ch - m }, // BR (Default)
+            { x: m, y: m },
+            { x: (w - cw) / 2, y: m },
+            { x: w - cw - m, y: m },
+            { x: m, y: (h - ch) / 2 },
+            { x: w - cw - m, y: (h - ch) / 2 },
+            { x: m, y: h - ch - m },
+            { x: (w - cw) / 2, y: h - ch - m },
+            { x: w - cw - m, y: h - ch - m },
         ];
 
-        // Find closest
-        let closest = points[7]; // Default to BR
+        let closest = points[7];
         let minDist = Infinity;
 
         for (const p of points) {
@@ -238,9 +404,7 @@
         isMobile = window.innerWidth < 768;
 
         if (!isMobile) {
-            // Re-snap on resize to ensure it stays on screen
             snapToEdge();
-            // Ensure hasInitialized is true if we switch to desktop
             if (wasMobile) {
                 hasInitialized = true;
             }
@@ -249,13 +413,11 @@
 
     onMount(() => {
         ctx = canvas.getContext("2d");
-        // Set fixed size for the "device" face
-        canvas.width = 240; // Wider for ears/case
-        canvas.height = 200; // Taller for ears
+        canvas.width = 240;
+        canvas.height = 200;
 
         isMobile = window.innerWidth < 768;
 
-        // Initialize position at bottom right for desktop
         if (!isMobile) {
             setTimeout(() => {
                 if (container) {
@@ -296,7 +458,6 @@
         ? `left: ${position.x}px; top: ${position.y}px;`
         : ""}
 >
-    <!-- Use inline style for cursor to override tailwind if needed, though class should work -->
     <canvas
         bind:this={canvas}
         class="w-32 h-28 sm:w-40 sm:h-32 md:w-52 md:h-40 drop-shadow-2xl"

@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import Icon from "@iconify/svelte";
 
     let billingPeriod = $state("monthly"); // 'monthly' | 'yearly'
 </script>
@@ -61,18 +62,10 @@
 
             <ul class="space-y-4 mb-8 flex-1">
                 <li class="flex items-start gap-3 text-brand-text/80">
-                    <svg
-                        class="w-5 h-5 text-green-500 mt-0.5 shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        ><path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M5 13l4 4L19 7"
-                        /></svg
-                    >
+                    <Icon
+                        icon="mdi:check"
+                        class="text-xl text-green-500 mt-0.5 shrink-0"
+                    />
                     <span>Up to 3 hours of recording/month</span>
                 </li>
                 <li class="flex items-start gap-3 text-brand-text/80">
@@ -163,18 +156,7 @@
                     <div
                         class="bg-brand-accent/20 p-1 rounded-full text-brand-accent mt-0.5"
                     >
-                        <svg
-                            class="w-3 h-3"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            ><path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="3"
-                                d="M5 13l4 4L19 7"
-                            /></svg
-                        >
+                        <Icon icon="mdi:check" class="text-xs" />
                     </div>
                     <span><strong>Unlimited</strong> recording hours</span>
                 </li>

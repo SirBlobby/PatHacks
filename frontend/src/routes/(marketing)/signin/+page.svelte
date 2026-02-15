@@ -1,3 +1,28 @@
+<script lang="ts">
+    import { goto } from "$app/navigation";
+    import { login } from "$lib/api";
+
+    let email = $state("");
+    let password = $state("");
+    let error = $state("");
+    let loading = $state(false);
+
+    async function handleSubmit(e: Event) {
+        e.preventDefault();
+        error = "";
+        loading = true;
+
+        try {
+            await login(email, password);
+            goto("/panel/dashboard");
+        } catch (err: any) {
+            error = err.message || "Sign in failed";
+        } finally {
+            loading = false;
+        }
+    }
+</script>
+
 <div class="max-w-md mx-auto py-24 px-4">
     <div
         class="bg-brand-surface/80 backdrop-blur-xl p-8 rounded-2xl border border-brand-text/10 shadow-2xl"
@@ -6,7 +31,15 @@
             Welcome Back
         </h1>
 
-        <form class="space-y-6">
+        {#if error}
+            <div
+                class="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm text-center"
+            >
+                {error}
+            </div>
+        {/if}
+
+        <form class="space-y-6" onsubmit={handleSubmit}>
             <div>
                 <label
                     for="email"
@@ -16,8 +49,10 @@
                 <input
                     type="email"
                     id="email"
+                    bind:value={email}
                     class="w-full p-3 bg-brand-bg border border-brand-text/20 rounded-lg text-brand-text focus:border-brand-accent focus:ring-1 focus:ring-brand-accent outline-none transition-all placeholder-brand-text/30 shadow-inner"
                     placeholder="you@example.com"
+                    required
                 />
             </div>
 
@@ -30,16 +65,19 @@
                 <input
                     type="password"
                     id="password"
+                    bind:value={password}
                     class="w-full p-3 bg-brand-bg border border-brand-text/20 rounded-lg text-brand-text focus:border-brand-accent focus:ring-1 focus:ring-brand-accent outline-none transition-all placeholder-brand-text/30 shadow-inner"
                     placeholder="••••••••"
+                    required
                 />
             </div>
 
             <button
                 type="submit"
-                class="w-full bg-brand-accent text-black font-bold py-3 rounded-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brand-accent/20 cursor-pointer"
+                disabled={loading}
+                class="w-full bg-brand-accent text-black font-bold py-3 rounded-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brand-accent/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-                Sign In
+                {loading ? "Signing In..." : "Sign In"}
             </button>
         </form>
 

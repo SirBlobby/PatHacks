@@ -1,6 +1,7 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { theme } from "$lib/stores/theme";
+  import { auth } from "$lib/stores/auth";
 
   let isMenuOpen = $state(false);
 </script>
@@ -104,11 +105,19 @@
         {/if}
       </button>
 
-      <a
-        href="/signin"
-        class="bg-brand-accent text-black px-4 py-2 rounded-md hover:opacity-90 transition-opacity font-bold"
-        >Sign In</a
-      >
+      {#if $auth}
+        <a
+          href="/panel/dashboard"
+          class="bg-brand-accent text-black px-4 py-2 rounded-md hover:opacity-90 transition-opacity font-bold"
+          >Panel</a
+        >
+      {:else}
+        <a
+          href="/signin"
+          class="bg-brand-accent text-black px-4 py-2 rounded-md hover:opacity-90 transition-opacity font-bold"
+          >Sign In</a
+        >
+      {/if}
     </div>
   </div>
 
@@ -180,12 +189,21 @@
         </button>
       </div>
 
-      <a
-        href="/signin"
-        onclick={() => (isMenuOpen = false)}
-        class="bg-brand-accent text-black px-4 py-3 rounded-md hover:opacity-90 transition-opacity font-bold text-center mt-2"
-        >Sign In</a
-      >
+      {#if $auth}
+        <a
+          href="/panel/dashboard"
+          onclick={() => (isMenuOpen = false)}
+          class="bg-brand-accent text-black px-4 py-3 rounded-md hover:opacity-90 transition-opacity font-bold text-center mt-2"
+          >Panel</a
+        >
+      {:else}
+        <a
+          href="/signin"
+          onclick={() => (isMenuOpen = false)}
+          class="bg-brand-accent text-black px-4 py-3 rounded-md hover:opacity-90 transition-opacity font-bold text-center mt-2"
+          >Sign In</a
+        >
+      {/if}
     </div>
   {/if}
 </nav>

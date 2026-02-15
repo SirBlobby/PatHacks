@@ -36,3 +36,11 @@ vite.config.ts.timestamp-*
 .svelte-kit/
 
 bun.lock
+
+venv/
+
+__pycache__/
+
+.venv/
+
+build/

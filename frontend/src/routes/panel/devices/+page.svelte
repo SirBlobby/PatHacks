@@ -1,66 +1,134 @@
-<div class="max-w-6xl mx-auto w-full">
+<script lang="ts">
+    import { onMount } from "svelte";
+    import { listDevices, deleteDevice } from "$lib/api";
+    import Icon from "@iconify/svelte";
+
+    let loading = $state(true);
+    let error = $state("");
+    let devices = $state([] as any[]);
+
+    onMount(async () => {
+        await fetchDevices();
+    });
+
+    async function fetchDevices() {
+        loading = true;
+        error = "";
+        try {
+            devices = await listDevices();
+        } catch (err: any) {
+            error = err.message;
+        } finally {
+            loading = false;
+        }
+    }
+
+    async function handleDelete(id: string, name: string) {
+        if (!confirm(`Delete device "${name}"? This cannot be undone.`)) return;
+        try {
+            await deleteDevice(id);
+            devices = devices.filter((d: any) => d.id !== id);
+        } catch (err: any) {
+            alert(err.message);
+        }
+    }
+
+    function timeAgo(dateStr: string | null): string {
+        if (!dateStr) return "Never";
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const mins = Math.floor(diff / 60000);
+        if (mins < 60) return `${mins}m ago`;
+        const hrs = Math.floor(mins / 60);
+        if (hrs < 24) return `${hrs}h ago`;
+        return `${Math.floor(hrs / 24)}d ago`;
+    }
+</script>
+
+<div class="max-w-4xl mx-auto w-full">
     <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-bold text-brand-text">Your Devices</h1>
+        <h1 class="text-3xl font-bold text-brand-text">My Devices</h1>
         <a
             href="/panel/devices/new"
-            class="bg-brand-accent text-black px-4 py-2 rounded-lg font-bold hover:opacity-90 transition shadow-lg shadow-brand-accent/20"
-            >Add Device</a
+            class="px-4 py-2 bg-brand-accent text-black font-bold rounded-lg hover:scale-105 transition-transform shadow-lg shadow-brand-accent/20"
         >
+            + Add Device
+        </a>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Device Card -->
-        <div
-            class="bg-brand-surface backdrop-blur border-2 border-brand-text/10 rounded-xl p-6 hover:border-brand-accent hover:shadow-lg hover:shadow-brand-accent/20 transition-all duration-300 cursor-pointer group"
-        >
-            <div class="flex justify-between items-start mb-4">
-                <div
-                    class="bg-green-500/20 text-green-500 px-2 py-1 rounded text-xs font-bold"
-                >
-                    ONLINE
-                </div>
-                <div class="text-brand-text/50">Battery: 85%</div>
-            </div>
-            <h3
-                class="text-xl font-bold text-brand-text group-hover:text-brand-accent transition-colors mb-2"
-            >
-                Lecture Buddy v1
-            </h3>
-            <p class="text-brand-text/70 text-sm mb-6">Last seen: 2 mins ago</p>
-            <div class="flex gap-2">
-                <a
-                    href="/panel/devices/123"
-                    class="flex-1 bg-brand-text/5 hover:bg-brand-text/10 text-brand-text text-center py-2 rounded font-medium transition"
-                    >Manage</a
-                >
-            </div>
+    {#if loading}
+        <div class="flex justify-center py-20">
+            <div
+                class="w-10 h-10 border-4 border-brand-accent border-t-transparent rounded-full animate-spin"
+            ></div>
         </div>
+    {:else if error}
+        <div
+            class="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-500 text-center"
+        >
+            {error}
+        </div>
+    {:else if devices.length === 0}
+        <div
+            class="bg-brand-surface/50 border border-brand-text/10 rounded-2xl p-12 text-center"
+        >
+            <p class="text-brand-text/50 text-lg mb-4">No devices paired yet</p>
+            <a
+                href="/panel/devices/new"
+                class="inline-block px-6 py-3 bg-brand-accent text-black font-bold rounded-lg hover:scale-105 transition-transform"
+            >
+                Register Your First Device
+            </a>
+        </div>
+    {:else}
+        <div class="grid gap-4">
+            {#each devices as device}
+                <div
+                    class="bg-brand-surface/80 backdrop-blur border border-brand-text/10 rounded-2xl p-6 flex items-center justify-between hover:border-brand-text/20 transition-colors"
+                >
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="w-12 h-12 rounded-xl bg-brand-accent/10 border border-brand-accent/20 flex items-center justify-center text-brand-accent"
+                        >
+                            <Icon icon="mdi:cellphone" class="text-2xl" />
+                        </div>
+                        <div>
+                            <p class="font-bold text-brand-text">
+                                {device.name}
+                            </p>
+                            <p class="text-sm text-brand-text/50">
+                                {device.device_type} • S/N: {device.serial_number}
+                            </p>
+                            <p class="text-xs text-brand-text/40 mt-0.5">
+                                Last seen: {timeAgo(device.last_seen)}
+                            </p>
+                        </div>
+                    </div>
 
-        <!-- Device Card -->
-        <div
-            class="bg-brand-surface backdrop-blur border-2 border-brand-text/10 rounded-xl p-6 hover:border-brand-accent hover:shadow-lg hover:shadow-brand-accent/20 transition-all duration-300 cursor-pointer group"
-        >
-            <div class="flex justify-between items-start mb-4">
-                <div
-                    class="bg-brand-text/10 text-brand-text/50 px-2 py-1 rounded text-xs font-bold"
-                >
-                    OFFLINE
+                    <div class="flex items-center gap-3">
+                        <span
+                            class="flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full font-medium {device.status ===
+                            'online'
+                                ? 'bg-green-500/10 text-green-500'
+                                : 'bg-brand-text/5 text-brand-text/40'}"
+                        >
+                            <span
+                                class="w-2 h-2 rounded-full {device.status ===
+                                'online'
+                                    ? 'bg-green-500'
+                                    : 'bg-brand-text/30'}"
+                            ></span>
+                            {device.status}
+                        </span>
+                        <button
+                            onclick={() => handleDelete(device.id, device.name)}
+                            class="p-2 rounded-lg hover:bg-red-500/10 text-brand-text/30 hover:text-red-500 transition-colors"
+                            title="Delete device"
+                        >
+                            <Icon icon="mdi:delete-outline" class="text-lg" />
+                        </button>
+                    </div>
                 </div>
-                <div class="text-brand-text/50">Battery: --</div>
-            </div>
-            <h3
-                class="text-xl font-bold text-brand-text group-hover:text-brand-accent transition-colors mb-2"
-            >
-                Portable Rec 2
-            </h3>
-            <p class="text-brand-text/70 text-sm mb-6">Last seen: 2 days ago</p>
-            <div class="flex gap-2">
-                <a
-                    href="/panel/devices/124"
-                    class="flex-1 bg-brand-text/5 hover:bg-brand-text/10 text-brand-text text-center py-2 rounded font-medium transition"
-                    >Manage</a
-                >
-            </div>
+            {/each}
         </div>
-    </div>
+    {/if}
 </div>
