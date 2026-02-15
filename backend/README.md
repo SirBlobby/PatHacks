@@ -2,6 +2,8 @@
 
 The API service for LearningBuddy, powered by Python Flask, Google Gemini, and Flask-SocketIO.
 
+https://buddy.sirblob.co/
+
 ## Features
 
 - **AI Chat** -- Context-grounded Q&A using Google Gemini with vector search (RAG).

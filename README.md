@@ -2,6 +2,8 @@
 
 A full-stack AI learning platform that combines a web dashboard with a physical ESP32 recording device. Students can upload lecture materials, chat with AI about their content (text and voice), and capture live lectures using a hardware companion that streams audio in real-time.
 
+https://buddy.sirblob.co/
+
 ## Architecture
 
 ```
