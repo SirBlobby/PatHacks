@@ -8,7 +8,7 @@
 
 #include <Arduino.h>
 #include "pins.h"
-// #include "display.h"
+#include "display.h"
 #include "speaker.h"
 #include "microphone.h"
 
@@ -28,10 +28,10 @@ void setup() {
     Serial.println("=============================================");
     Serial.println();
 
-    // // --- Test 1: Display ---
-    // Serial.println(">>> TEST 1/3: OLED Display");
-    // display_test();
-    // Serial.println();
+    // --- Test 1: Display ---
+    Serial.println(">>> TEST 1/3: OLED Display");
+    display_test();
+    Serial.println();
 
     // delay(500);
 
@@ -41,19 +41,19 @@ void setup() {
     // spk_test();
     // Serial.println();
 
-    delay(500);
+    // delay(500);
 
     // --- Test 3: Microphone ---
-    Serial.println(">>> TEST 3/3: PDM Microphone");
-    // display_message("Testing...", "Microphone (5s)");
-    mic_test(5000);  // 5 second microphone test
-    Serial.println();
+    // Serial.println(">>> TEST 3/3: PDM Microphone");
+    // // display_message("Testing...", "Microphone (5s)");
+    // mic_test(5000);  // 5 second microphone test
+    // Serial.println();
 
-    // --- Summary ---
-    Serial.println("=============================================");
-    Serial.println("  All tests complete!");
-    Serial.println("  Check serial output for PASS/FAIL status.");
-    Serial.println("=============================================");
+    // // --- Summary ---
+    // Serial.println("=============================================");
+    // Serial.println("  All tests complete!");
+    // Serial.println("  Check serial output for PASS/FAIL status.");
+    // Serial.println("=============================================");
 
     // display_message("All Tests", "Complete!");
 }
@@ -62,6 +62,6 @@ void loop() {
     // Keep speaker stream moving
     // This handles buffering automatically
     // spk_loop();
-    mic_loop();
+    // mic_loop();
     delay(1);
 }
