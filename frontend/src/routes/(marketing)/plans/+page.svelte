@@ -1,38 +1,22 @@
 <script lang="ts">
     import Icon from "@iconify/svelte";
-    import { auth } from "$lib/stores/auth";
-
-    let isPro = $derived($auth?.plan?.toLowerCase() === "pro");
 </script>
 
-<div class="max-w-6xl mx-auto w-full px-4 py-8">
-    <div class="text-center mb-12">
-        <h1 class="text-4xl font-bold text-brand-text mb-4">
-            Your Plan
+<div class="max-w-6xl mx-auto py-16 px-6">
+    <div class="text-center mb-16">
+        <h1 class="text-5xl md:text-6xl font-black mb-6 text-brand-text/90">
+            Simple <span class="text-brand-accent">Pricing</span>
         </h1>
         <p class="text-xl text-brand-text/60 max-w-2xl mx-auto">
-            {#if isPro}
-                You're on the <strong class="text-brand-accent">Pro</strong> plan. You have unlimited storage and device access.
-            {:else}
-                You're currently on the <strong class="text-brand-text">Free</strong> plan. Upgrade to Pro for unlimited storage and a physical device.
-            {/if}
+            Get started for free. Upgrade once, own it forever. No subscriptions, no surprises.
         </p>
     </div>
 
     <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         <!-- Free Plan -->
         <div
-            class="bg-brand-surface/80 backdrop-blur border-2 rounded-3xl p-8 relative flex flex-col
-                {!isPro ? 'border-brand-accent' : 'border-brand-text/10 hover:border-brand-text/20 transition-colors'}"
+            class="bg-brand-surface/80 backdrop-blur border-2 border-brand-text/10 rounded-3xl p-8 relative hover:border-brand-text/20 transition-colors flex flex-col"
         >
-            {#if !isPro}
-                <div
-                    class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-black px-4 py-1 rounded-full text-sm font-bold shadow-lg"
-                >
-                    CURRENT PLAN
-                </div>
-            {/if}
-
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-brand-text">Free</h3>
                 <p class="text-brand-text/60 mt-2">
@@ -41,7 +25,7 @@
             </div>
 
             <div class="mb-8">
-                <span class="text-4xl font-bold text-brand-text">$0</span>
+                <span class="text-5xl font-bold text-brand-text">$0</span>
                 <span class="text-brand-text/50 ml-1">forever</span>
             </div>
 
@@ -76,32 +60,23 @@
                 </li>
             </ul>
 
-            {#if !isPro}
-                <button
-                    disabled
-                    class="w-full py-3.5 rounded-xl border-2 border-brand-accent/30 text-brand-accent font-bold cursor-default opacity-70"
-                >
-                    Current Plan
-                </button>
-            {:else}
-                <div class="w-full py-3.5 rounded-xl border-2 border-brand-text/10 text-brand-text/40 font-bold text-center">
-                    Free Tier
-                </div>
-            {/if}
+            <a
+                href="/register"
+                class="w-full py-3.5 rounded-xl border-2 border-brand-text/10 text-brand-text font-bold hover:bg-brand-text/5 transition-colors text-center block"
+            >
+                Get Started Free
+            </a>
         </div>
 
         <!-- Pro Plan -->
         <div
-            class="bg-brand-surface/80 backdrop-blur border-2 rounded-3xl p-8 relative flex flex-col
-                {isPro ? 'border-brand-accent shadow-2xl shadow-brand-accent/10' : 'border-brand-text/10 hover:border-brand-accent/30 transition-colors'}"
+            class="bg-brand-surface border-2 border-brand-accent rounded-3xl p-8 relative shadow-2xl shadow-brand-accent/10 flex flex-col transform md:-translate-y-4"
         >
-            {#if isPro}
-                <div
-                    class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-black px-4 py-1 rounded-full text-sm font-bold shadow-lg"
-                >
-                    CURRENT PLAN
-                </div>
-            {/if}
+            <div
+                class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-accent text-black px-4 py-1 rounded-full text-sm font-bold shadow-lg"
+            >
+                BEST VALUE
+            </div>
 
             <div class="mb-6">
                 <h3 class="text-2xl font-bold text-brand-text">Pro</h3>
@@ -151,20 +126,37 @@
                 </li>
             </ul>
 
-            {#if isPro}
-                <button
-                    disabled
-                    class="w-full py-3.5 rounded-xl border-2 border-brand-accent/30 text-brand-accent font-bold cursor-default opacity-70"
-                >
-                    Current Plan
-                </button>
-            {:else}
-                <button
-                    class="w-full py-4 rounded-xl bg-brand-accent text-black font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brand-accent/20 cursor-pointer"
-                >
-                    Upgrade to Pro
-                </button>
-            {/if}
+            <a
+                href="/register"
+                class="w-full py-4 rounded-xl bg-brand-accent text-black font-bold text-lg hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-brand-accent/20 text-center block"
+            >
+                Get Pro
+            </a>
+        </div>
+    </div>
+
+    <!-- FAQ / Bottom Note -->
+    <div class="mt-20 max-w-3xl mx-auto">
+        <h2 class="text-2xl font-bold text-brand-text mb-8 text-center">Frequently Asked Questions</h2>
+        <div class="space-y-6">
+            <div class="bg-brand-surface/30 backdrop-blur-md rounded-2xl border border-brand-text/5 p-6">
+                <h3 class="text-lg font-bold text-brand-text mb-2">Why a one-time purchase?</h3>
+                <p class="text-brand-text/60 leading-relaxed">
+                    We believe students shouldn't worry about recurring charges. Pay once for the Pro plan and you own it forever -- the device, the storage, everything.
+                </p>
+            </div>
+            <div class="bg-brand-surface/30 backdrop-blur-md rounded-2xl border border-brand-text/5 p-6">
+                <h3 class="text-lg font-bold text-brand-text mb-2">What's included with the device?</h3>
+                <p class="text-brand-text/60 leading-relaxed">
+                    The Pro plan ships with a LearningBuddy ESP32-S3 device, pre-configured and ready to pair. Just power it on, connect to Wi-Fi, and enter the 6-character key on your dashboard.
+                </p>
+            </div>
+            <div class="bg-brand-surface/30 backdrop-blur-md rounded-2xl border border-brand-text/5 p-6">
+                <h3 class="text-lg font-bold text-brand-text mb-2">Can I upgrade later?</h3>
+                <p class="text-brand-text/60 leading-relaxed">
+                    Absolutely. Start on the Free plan and upgrade to Pro whenever you're ready. Your existing sources and chat history carry over.
+                </p>
+            </div>
         </div>
     </div>
 </div>

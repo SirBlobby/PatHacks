@@ -1,29 +1,33 @@
 <section
-  class="min-h-[80vh] flex flex-col justify-center items-center text-center relative overflow-hidden px-4"
+  class="min-h-[85vh] flex flex-col justify-center items-center text-center relative overflow-hidden px-4"
 >
   <h1
-    class="text-4xl sm:text-6xl md:text-8xl font-black text-brand-accent mb-6 drop-shadow-2xl"
+    class="text-5xl sm:text-7xl md:text-8xl font-black text-brand-text mb-6 drop-shadow-2xl tracking-tight"
   >
-    LearningBuddy
+    Learning<span class="text-brand-accent">Buddy</span>
   </h1>
+
   <p
-    class="text-xl md:text-2xl text-brand-text/70 max-w-2xl mb-10 leading-relaxed"
+    class="text-xl md:text-2xl text-brand-text/80 max-w-3xl mb-12 leading-relaxed"
   >
-    Your AI companion for mastering lectures. Record, transcribe, summarize, and
-    ask questions.
+    The ultimate ecosystem for mastering your studies. Combine our powerful AI
+    software with the new
+    <span class="text-brand-accent font-bold">Physical Companion</span> to record,
+    transcribe, and interact with your lectures like never before.
   </p>
+
   <div
-    class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto max-w-sm sm:max-w-none mx-auto"
+    class="flex flex-col sm:flex-row gap-6 w-full sm:w-auto max-w-md sm:max-w-none mx-auto z-10"
   >
     <a
       href="/register"
-      class="bg-brand-accent text-black px-8 py-3 rounded-full text-lg font-bold hover:scale-105 transition-transform shadow-lg shadow-brand-accent/50 text-center"
-      >Get Started</a
+      class="bg-brand-accent text-black px-10 py-4 rounded-xl text-xl font-bold hover:scale-105 hover:shadow-brand-accent/40 hover:shadow-2xl transition-all duration-300 text-center"
+      >Get Started Free</a
     >
     <a
-      href="/about"
-      class="border border-brand-accent text-brand-accent px-8 py-3 rounded-full text-lg font-bold hover:bg-brand-accent/10 transition-colors text-center"
-      >Learn More</a
+      href="/plans"
+      class="border-2 border-brand-accent/30 bg-brand-surface/50 backdrop-blur text-brand-accent px-10 py-4 rounded-xl text-xl font-bold hover:bg-brand-accent hover:text-black hover:border-transparent transition-all duration-300 text-center"
+      >View Pricing</a
     >
   </div>
 </section>

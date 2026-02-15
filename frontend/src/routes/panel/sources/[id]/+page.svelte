@@ -76,10 +76,10 @@
         <div
             class="flex flex-col md:flex-row justify-between md:items-center mb-8 gap-4"
         >
-            <div class="flex items-center gap-4">
+            <div class="flex items-center gap-4 min-w-0">
                 <a
                     href="/panel/sources"
-                    class="text-brand-text/50 hover:text-brand-text transition flex items-center gap-1 group"
+                    class="text-brand-text/50 hover:text-brand-text transition flex items-center gap-1 group shrink-0"
                 >
                     <Icon
                         icon="mdi:arrow-left"
@@ -96,33 +96,33 @@
                         class="text-3xl"
                     />
                 </div>
-                <div>
+                <div class="min-w-0">
                     <h1
-                        class="text-2xl md:text-3xl font-bold text-brand-text line-clamp-1"
+                        class="text-2xl md:text-3xl font-bold text-brand-text truncate"
                     >
                         {source.title}
                     </h1>
                     <p
-                        class="text-sm text-brand-text/40 mt-0.5 flex items-center gap-2"
+                        class="text-sm text-brand-text/40 mt-0.5 flex items-center gap-2 truncate"
                     >
                         <span
-                            class="uppercase tracking-wider font-semibold text-brand-accent"
+                            class="uppercase tracking-wider font-semibold text-brand-accent shrink-0"
                             >{source.file_type}</span
                         >
-                        <span>•</span>
-                        <span
+                        <span class="shrink-0">•</span>
+                        <span class="shrink-0"
                             >{source.char_count?.toLocaleString() || 0} chars</span
                         >
                         {#if source.original_filename}
-                            <span>•</span>
-                            <span class="truncate max-w-[200px]"
+                            <span class="shrink-0">•</span>
+                            <span class="truncate"
                                 >{source.original_filename}</span
                             >
                         {/if}
                     </p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 shrink-0">
                 <button
                     onclick={handleRegenerate}
                     disabled={regenerating}

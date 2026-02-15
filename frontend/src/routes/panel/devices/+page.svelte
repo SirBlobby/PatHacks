@@ -95,9 +95,20 @@
                             <p class="font-bold text-brand-text">
                                 {device.name}
                             </p>
-                            <p class="text-sm text-brand-text/50">
-                                {device.device_type} • S/N: {device.serial_number}
+                            <p
+                                class="text-sm text-brand-text/50 font-mono tracking-wide"
+                            >
+                                KEY: {device.key}
                             </p>
+                            {#if device.latest_data}
+                                <p
+                                    class="text-xs text-brand-accent/70 mt-1 truncate max-w-[200px]"
+                                >
+                                    Last Data: {JSON.stringify(
+                                        device.latest_data,
+                                    )}
+                                </p>
+                            {/if}
                             <p class="text-xs text-brand-text/40 mt-0.5">
                                 Last seen: {timeAgo(device.last_seen)}
                             </p>

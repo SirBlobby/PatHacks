@@ -151,14 +151,14 @@ export async function getDevice(id: string) {
     return request(`/devices/${id}`);
 }
 
-export async function registerDevice(data: { serial_number: string; name: string; device_type: string }) {
+export async function registerDevice(data: { key: string; name: string }) {
     return request('/devices', {
         method: 'POST',
         body: JSON.stringify(data),
     });
 }
 
-export async function updateDevice(id: string, data: { name?: string; device_type?: string }) {
+export async function updateDevice(id: string, data: { name?: string }) {
     return request(`/devices/${id}`, {
         method: 'PUT',
         body: JSON.stringify(data),
@@ -275,6 +275,54 @@ export async function streamChatMessage(
     }
 
     return fullResponse;
+}
+
+// ── Voice (ElevenLabs Conversational AI) ──
+
+export interface VoiceSessionInfo {
+    signed_url: string;
+    system_prompt: string;
+    source_title: string;
+    agent_id: string;
+}
+
+/**
+ * Get a signed URL and RAG context for an ElevenLabs voice conversation.
+ */
+export async function getVoiceSignedUrl(sourceId: string): Promise<VoiceSessionInfo> {
+    return request<VoiceSessionInfo>(`/sources/${sourceId}/voice/signed-url`);
+}
+
+// ── Recordings ──
+
+export interface Recording {
+    id: string;
+    device_id: string;
+    title: string;
+    status: 'recording' | 'processing' | 'transcribing' | 'completed' | 'error';
+    source_id: string | null;
+    duration_seconds: number;
+    language: string | null;
+    error: string | null;
+    started_at: string | null;
+    completed_at: string | null;
+    created_at: string | null;
+}
+
+export async function listRecordings(): Promise<Recording[]> {
+    return request<Recording[]>('/recordings');
+}
+
+export async function getRecording(id: string): Promise<Recording> {
+    return request<Recording>(`/recordings/${id}`);
+}
+
+export async function deleteRecording(id: string) {
+    return request(`/recordings/${id}`, { method: 'DELETE' });
+}
+
+export async function listDeviceRecordings(deviceId: string): Promise<Recording[]> {
+    return request<Recording[]>(`/recordings/device/${deviceId}`);
 }
 
 // ── Profile ──

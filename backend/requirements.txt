@@ -7,6 +7,7 @@ google-genai==1.14.0
 python-dotenv==1.1.0
 bcrypt==4.3.0
 gunicorn==23.0.0
+requests==2.32.3
 
 # Document Processing
 pypdf
@@ -18,6 +19,10 @@ openpyxl
 pyyaml
 beautifulsoup4
 Pillow
+
+# WebSocket (for device audio streaming)
+flask-socketio==5.5.1
+simple-websocket==1.1.0
 
 # Audio Transcription
 faster-whisper

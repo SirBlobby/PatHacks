@@ -17,6 +17,10 @@ class Config:
 
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
+    # ElevenLabs Conversational AI
+    ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+    ELEVENLABS_AGENT_ID = os.getenv("ELEVENLABS_AGENT_ID", "")
+
     MONGODB_URI = os.getenv("MONGODB_URI", "")
     MONGODB_DB_NAME = os.getenv("MONGODB_DB_NAME", "learningbuddy")
 

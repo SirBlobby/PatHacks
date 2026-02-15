@@ -67,6 +67,13 @@
             ? 'text-brand-accent font-bold'
             : 'text-brand-text/70 hover:text-brand-text'}">Hardware</a
         >
+        <a
+          href="/plans"
+          class="hover:text-brand-accent transition-colors {$page.url
+            .pathname === '/plans'
+            ? 'text-brand-accent font-bold'
+            : 'text-brand-text/70 hover:text-brand-text'}">Pricing</a
+        >
       </div>
 
       <button
@@ -148,6 +155,14 @@
         '/hardware'
           ? 'text-brand-accent font-bold'
           : 'text-brand-text/70'}">Hardware</a
+      >
+      <a
+        href="/plans"
+        onclick={() => (isMenuOpen = false)}
+        class="text-lg p-2 rounded hover:bg-white/5 {$page.url.pathname ===
+        '/plans'
+          ? 'text-brand-accent font-bold'
+          : 'text-brand-text/70'}">Pricing</a
       >
 
       <div class="h-px bg-gray-800 my-2"></div>

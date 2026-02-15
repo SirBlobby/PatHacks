@@ -1,0 +1,38 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/learningbuddy
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ELEVENLABS_AGENT_ID=${ELEVENLABS_AGENT_ID}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev-secret}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-jwt-secret}
+    volumes:
+      - uploads-data:/app/uploads
+      - whisper-cache:/root/.cache
+    depends_on:
+      - mongo
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - BACKEND_URL=http://backend:5000
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
+  uploads-data:
+  whisper-cache:

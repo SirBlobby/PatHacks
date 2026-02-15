@@ -3,9 +3,8 @@
     import { registerDevice } from "$lib/api";
     import Icon from "@iconify/svelte";
 
-    let serialNumber = $state("");
+    let deviceKey = $state("");
     let deviceName = $state("");
-    let deviceType = $state("Standard Recorder");
     let error = $state("");
     let loading = $state(false);
 
@@ -16,9 +15,8 @@
 
         try {
             await registerDevice({
-                serial_number: serialNumber,
+                key: deviceKey,
                 name: deviceName,
-                device_type: deviceType,
             });
             goto("/panel/devices");
         } catch (err: any) {
@@ -58,16 +56,16 @@
         <form class="space-y-6" onsubmit={handleSubmit}>
             <div>
                 <label
-                    for="serial-number"
+                    for="device-key"
                     class="block text-brand-text/70 text-sm font-bold mb-2 ml-1"
-                    >Device Serial Number</label
+                    >Device Key</label
                 >
                 <input
-                    id="serial-number"
+                    id="device-key"
                     type="text"
-                    bind:value={serialNumber}
-                    class="w-full bg-brand-bg border border-brand-text/20 rounded-lg p-3 text-brand-text placeholder-brand-text/30 focus:border-brand-accent focus:ring-1 focus:ring-brand-accent outline-none transition-all shadow-inner"
-                    placeholder="Enter S/N found on the back of device"
+                    bind:value={deviceKey}
+                    class="w-full bg-brand-bg border border-brand-text/20 rounded-lg p-3 text-brand-text placeholder-brand-text/30 focus:border-brand-accent focus:ring-1 focus:ring-brand-accent outline-none transition-all shadow-inner font-mono tracking-widest uppercase"
+                    placeholder="ENTER KEY DISPLAYED ON SCREEN"
                     required
                 />
             </div>
@@ -83,25 +81,9 @@
                     type="text"
                     bind:value={deviceName}
                     class="w-full bg-brand-bg border border-brand-text/20 rounded-lg p-3 text-brand-text placeholder-brand-text/30 focus:border-brand-accent focus:ring-1 focus:ring-brand-accent outline-none transition-all shadow-inner"
-                    placeholder="e.g. My Lecture Buddy"
+                    placeholder="e.g. My Learning Buddy"
                     required
                 />
-            </div>
-
-            <div>
-                <label
-                    for="device-type"
-                    class="block text-brand-text/70 text-sm font-bold mb-2 ml-1"
-                    >Device Type</label
-                >
-                <select
-                    id="device-type"
-                    bind:value={deviceType}
-                    class="w-full bg-brand-bg border border-brand-text/20 rounded-lg p-3 text-brand-text focus:border-brand-accent focus:ring-1 focus:ring-brand-accent outline-none transition-all shadow-inner"
-                >
-                    <option>Standard Recorder</option>
-                    <option>Pro Model</option>
-                </select>
             </div>
 
             <div class="pt-4">

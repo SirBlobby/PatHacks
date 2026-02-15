@@ -6,7 +6,7 @@
 		},
 		{
 			title: "Instant Transcription",
-			desc: "Convert speech to text in real-time with high accuracy, supporting multiple languages and dialects.",
+			desc: "Convert speech to text automatically with high accuracy using on-device Whisper AI, supporting multiple languages.",
 		},
 		{
 			title: "AI Summaries",
@@ -15,6 +15,14 @@
 		{
 			title: "Interactive Q&A",
 			desc: "Ask questions about your lectures and get instant answers from your AI buddy, backed by vector search.",
+		},
+		{
+			title: "Voice Chat",
+			desc: "Talk to your AI study buddy out loud. Ask questions, get explanations, and have natural conversations about your material.",
+		},
+		{
+			title: "Live Lecture Capture",
+			desc: "Stream audio from your physical LearningBuddy device over WebSocket. Recordings are transcribed and indexed automatically.",
 		},
 	];
 </script>
@@ -25,7 +33,7 @@
 	>
 		Key Features
 	</h2>
-	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 px-4">
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
 		{#each features as feature}
 			<div
 				class="p-8 bg-brand-surface backdrop-blur-md border-2 border-brand-text/10 rounded-2xl shadow-lg hover:border-brand-accent hover:shadow-brand-accent/20 transition-all duration-300 group"
