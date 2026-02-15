@@ -31,6 +31,7 @@ static WebSocketsClient webSocket;
 
 // Callbacks
 static SioEventCallback   _event_cb = nullptr;
+static SioBinaryCallback  _binary_cb = nullptr;
 static SioConnectCallback _connect_cb = nullptr;
 static SioDisconnectCallback _disconnect_cb = nullptr;
 
@@ -40,6 +41,12 @@ static bool ws_connected = false;
 static unsigned long last_ping = 0;
 static unsigned long ping_interval = SIO_PING_INTERVAL_MS;
 static String sio_sid = "";
+
+// Binary attachment tracking
+// When we receive a 451-["event",{"_placeholder":true,"num":0}] text frame,
+// we store the event name and wait for the next binary frame.
+static bool expecting_binary = false;
+static String pending_binary_event = "";
 
 // Forward declarations
 static void webSocketEvent(WStype_t type, uint8_t* payload, size_t length);
@@ -120,6 +127,10 @@ void sio_on_event(SioEventCallback cb) {
     _event_cb = cb;
 }
 
+void sio_on_binary(SioBinaryCallback cb) {
+    _binary_cb = cb;
+}
+
 void sio_on_connect(SioConnectCallback cb) {
     _connect_cb = cb;
 }
@@ -151,8 +162,16 @@ static void webSocketEvent(WStype_t type, uint8_t* payload, size_t length) {
         }
 
         case WStype_BIN:
-            // Binary frames from server (not expected in our protocol)
-            Serial.printf("[SIO] Received binary: %d bytes\n", length);
+            // Binary frame from server — this is the attachment for a 451- event
+            if (expecting_binary && _binary_cb) {
+                Serial.printf("[SIO] Binary attachment for '%s': %d bytes\n",
+                              pending_binary_event.c_str(), length);
+                _binary_cb(pending_binary_event.c_str(), payload, length);
+            } else {
+                Serial.printf("[SIO] Unexpected binary frame: %d bytes\n", length);
+            }
+            expecting_binary = false;
+            pending_binary_event = "";
             break;
 
         case WStype_ERROR:
@@ -252,6 +271,34 @@ static void handleSioPacket(const char* payload, size_t length) {
                 case '4': {
                     // SIO ERROR
                     Serial.printf("[SIO] Error: %s\n", payload + 2);
+                    break;
+                }
+
+                case '5': {
+                    // SIO BINARY_EVENT - e.g. 451-["event_name",{"_placeholder":true,"num":0}]
+                    // Format: 45<num_attachments>-<json_array>
+                    // Skip "45", find "-", then parse JSON
+                    const char* after_type = payload + 2; // skip "45"
+                    const char* dash = strchr(after_type, '-');
+                    if (!dash) {
+                        Serial.println("[SIO] Malformed binary event (no dash)");
+                        break;
+                    }
+
+                    const char* json_start = dash + 1;
+                    JsonDocument doc;
+                    DeserializationError err = deserializeJson(doc, json_start);
+                    if (err) {
+                        Serial.printf("[SIO] Failed to parse binary event: %s\n", err.c_str());
+                        break;
+                    }
+
+                    if (doc.is<JsonArray>() && doc.size() >= 1) {
+                        pending_binary_event = doc[0].as<String>();
+                        expecting_binary = true;
+                        Serial.printf("[SIO] Expecting binary attachment for: %s\n",
+                                      pending_binary_event.c_str());
+                    }
                     break;
                 }
 

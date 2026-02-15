@@ -16,6 +16,7 @@ static uint8_t audio_buffer[AUDIO_CHUNK_SIZE];
 static bool stream_active = false;
 static bool mic_initialized = false;
 static unsigned long last_send_time = 0;
+static const char* sio_event_name = "audio_data";  // configurable per-session
 
 // I2S port for microphone (use port 0)
 #define I2S_MIC_PORT I2S_NUM_0
@@ -68,16 +69,18 @@ bool audio_stream_init() {
     return true;
 }
 
-void audio_stream_start() {
+void audio_stream_start(const char* event_name) {
     if (!mic_initialized) {
         if (!audio_stream_init()) return;
     }
+
+    sio_event_name = event_name;
 
     // Start I2S
     i2s_start(I2S_MIC_PORT);
     stream_active = true;
     last_send_time = millis();
-    Serial.println("[AUDIO] Streaming started.");
+    Serial.printf("[AUDIO] Streaming started (event: %s).\n", sio_event_name);
 }
 
 void audio_stream_stop() {
@@ -97,7 +100,19 @@ void audio_stream_loop() {
 
     if (err == ESP_OK && bytes_read > 0) {
         // Send raw PCM data as binary Socket.IO event
-        sio_emit_binary("audio_data", audio_buffer, bytes_read);
+        sio_emit_binary(sio_event_name, audio_buffer, bytes_read);
+    }
+}
+
+void audio_stream_teardown() {
+    // Fully stop and uninstall I2S driver to free the bus for speaker
+    if (stream_active) {
+        audio_stream_stop();
+    }
+    if (mic_initialized) {
+        i2s_driver_uninstall(I2S_MIC_PORT);
+        mic_initialized = false;
+        Serial.println("[AUDIO] Mic I2S driver uninstalled.");
     }
 }
 

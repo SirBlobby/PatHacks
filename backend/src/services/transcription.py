@@ -1,10 +1,34 @@
 """
 Audio/Video Transcription Service using faster-whisper.
+
+Automatically uses GPU (CUDA) when available for significantly faster
+transcription, falling back to CPU with int8 quantization.
 """
 
 import os
 import subprocess
 from pathlib import Path
+
+
+def _detect_device() -> tuple[str, str]:
+    """
+    Detect whether CUDA is available for CTranslate2.
+
+    Returns:
+        Tuple of (device, compute_type):
+        - ("cuda", "float16") if NVIDIA GPU is available
+        - ("cpu", "int8") otherwise
+    """
+    try:
+        import ctranslate2
+        if "cuda" in ctranslate2.get_supported_compute_types("cuda"):
+            print("[Whisper] CUDA available — using GPU with float16.")
+            return "cuda", "float16"
+    except Exception:
+        pass
+
+    print("[Whisper] CUDA not available — using CPU with int8.")
+    return "cpu", "int8"
 
 
 def extract_audio_from_video(video_path: str, output_dir: str = None) -> str:
@@ -53,7 +77,8 @@ def transcribe_audio(file_path: str, model_size: str = "base") -> dict:
         raise ImportError("faster-whisper is required: pip install faster-whisper")
 
     print(f"[Whisper] Loading model '{model_size}'...")
-    model = WhisperModel(model_size, compute_type="int8", device="cpu")
+    device, compute_type = _detect_device()
+    model = WhisperModel(model_size, compute_type=compute_type, device=device)
 
     print(f"[Whisper] Transcribing {os.path.basename(file_path)}...")
     segments_gen, info = model.transcribe(file_path, beam_size=5)

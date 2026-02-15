@@ -2,9 +2,9 @@
 #define PINS_H
 
 // =============================================================
-// Pin Definitions for PatHacks Hardware
+// Pin Definitions for LearningBuddy Hardware
 // MCU: Seeed Studio XIAO ESP32-S3 Sense
-// Power: 3.7V LiPo → onboard regulator → 3.3V for all peripherals
+// Power: 3.7V LiPo -> onboard regulator -> 3.3V for all peripherals
 // =============================================================
 
 // --- Onboard PDM Microphone (Sense Expansion Board) ---
@@ -24,9 +24,9 @@
 #define OLED_CS        5   // D4  - Chip Select
 #define OLED_RST       6   // D5  - Reset
 
-// --- Push Buttons (Active-Low, Internal Pull-Up) ---
-#define BTN_A_PIN      8   // D9  - Button A
-#define BTN_B_PIN     44   // D7  - Button B
+// --- Push Buttons (active LOW with internal pullup) ---
+#define BUTTON_A_PIN   8   // D9 (MISO) - Recording toggle
+#define BUTTON_B_PIN  44   // D7 (RX)   - Voice call push-to-talk
 
 // --- Display Parameters ---
 #define SCREEN_WIDTH  128

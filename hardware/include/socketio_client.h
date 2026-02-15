@@ -5,6 +5,7 @@
 
 // Callback types
 typedef void (*SioEventCallback)(const char* event, const char* payload);
+typedef void (*SioBinaryCallback)(const char* event, const uint8_t* data, size_t len);
 typedef void (*SioConnectCallback)();
 typedef void (*SioDisconnectCallback)();
 
@@ -12,7 +13,7 @@ typedef void (*SioDisconnectCallback)();
 void sio_init();
 
 // Connect to the backend server
-// server_url: e.g. "192.168.1.100", port: e.g. 5000
+// server_url: e.g. "buddy.sirblob.co", port: e.g. 443
 bool sio_connect(const char* host, uint16_t port);
 
 // Disconnect
@@ -33,6 +34,7 @@ void sio_emit_binary(const char* event, const uint8_t* data, size_t len);
 
 // Set callbacks
 void sio_on_event(SioEventCallback cb);
+void sio_on_binary(SioBinaryCallback cb);
 void sio_on_connect(SioConnectCallback cb);
 void sio_on_disconnect(SioDisconnectCallback cb);
 

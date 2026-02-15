@@ -16,6 +16,38 @@ services:
     depends_on:
       - mongo
 
+  # GPU-accelerated backend (uses NVIDIA CUDA for Whisper transcription)
+  # Requires: NVIDIA GPU + NVIDIA Container Toolkit on host
+  # Usage: docker compose --profile gpu up --build
+  # Note: stop the default backend first, or it will conflict on port 5000
+  backend-gpu:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.gpu
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGODB_URI=mongodb://mongo:27017/learningbuddy
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+      - ELEVENLABS_AGENT_ID=${ELEVENLABS_AGENT_ID}
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-dev-secret}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-dev-jwt-secret}
+    volumes:
+      - uploads-data:/app/uploads
+      - whisper-cache:/root/.cache
+    depends_on:
+      - mongo
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    profiles:
+      - gpu
+
   frontend:
     build: ./frontend
     ports:

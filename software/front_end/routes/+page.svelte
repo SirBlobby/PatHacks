@@ -26,7 +26,7 @@
     let selectedPort = $state("");
     let selectedSsid = $state("");
     let wifiPassword = $state("");
-    let serverUrl = $state("https://learningbuddy.tech");
+    let serverUrl = $state("https://buddy.sirblob.co");
     let deviceKey = $state("");
     let errorMessage = $state("");
     let statusMessage = $state("");
@@ -288,7 +288,7 @@
                         id="server-url"
                         type="url"
                         bind:value={serverUrl}
-                        placeholder="https://learningbuddy.tech"
+                        placeholder="https://buddy.sirblob.co"
                     />
                     <p class="field-hint">The URL of your Learning Buddy backend server.</p>
                 </div>

@@ -18,7 +18,7 @@
 #define NVS_KEY_CONFIGURED "configured"
 
 // --- Default Backend Server ---
-#define DEFAULT_SERVER_URL "http://192.168.1.100:5000"
+#define DEFAULT_SERVER_URL "https://buddy.sirblob.co"
 
 // --- WiFi Settings ---
 #define WIFI_CONNECT_TIMEOUT_MS  15000
@@ -29,19 +29,25 @@
 #define SIO_PING_INTERVAL_MS     25000
 #define SIO_PATH               "/socket.io/?EIO=4&transport=websocket"
 
-// --- Audio Streaming ---
+// --- Audio Streaming (Recording) ---
 #define AUDIO_CHUNK_SIZE       1024    // bytes per Socket.IO audio_data event
 #define AUDIO_SEND_INTERVAL_MS 32      // ~32ms per chunk at 16kHz/16bit = 1024 bytes
+
+// --- Speaker Playback (Voice Call) ---
+#define SPK_BUFFER_SIZE        8192    // Ring buffer for incoming TTS audio
+#define SPK_I2S_DMA_BUF_COUNT  8
+#define SPK_I2S_DMA_BUF_LEN    256
 
 // --- Serial Protocol ---
 #define SERIAL_BAUD            115200
 #define SERIAL_TIMEOUT_MS      100
 
-// --- Recording Button (optional - use boot button on XIAO) ---
-// The XIAO ESP32-S3 doesn't have a dedicated user button on headers,
-// but the BOOT button (GPIO 0) can be used after boot
-#define BUTTON_PIN             0
-#define BUTTON_DEBOUNCE_MS     300
-#define LONG_PRESS_MS          2000
+// --- Button A: Recording Toggle (GPIO 8) ---
+#define BUTTON_A_DEBOUNCE_MS   300
+#define BUTTON_A_LONG_PRESS_MS 2000    // Long press = factory reset
+
+// --- Button B: Voice Call Push-to-Talk (GPIO 44) ---
+#define BUTTON_B_DEBOUNCE_MS   200
+#define BUTTON_B_LONG_PRESS_MS 2000    // Long press = end call
 
 #endif // CONFIG_H

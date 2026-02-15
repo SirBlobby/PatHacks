@@ -35,7 +35,7 @@ The app guides users through 4 steps:
 
 1. **Device Detection** - Scans USB serial ports and WiFi networks, then pings the ESP32 to verify communication
 2. **WiFi Configuration** - User selects a WiFi network and enters the password. Credentials are sent to the ESP32 which connects and confirms
-3. **Server Configuration** - User enters the backend server URL (defaults to `https://learningbuddy.tech`) and the 6-character device key from their web dashboard
+3. **Server Configuration** - User enters the backend server URL (defaults to `https://buddy.sirblob.co`) and the 6-character device key from their web dashboard
 4. **Done** - Device is fully provisioned and ready. WiFi, server URL, and device key are stored in ESP32 NVS and persist across reboots
 
 ### Serial Protocol

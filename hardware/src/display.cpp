@@ -200,3 +200,98 @@ void display_idle(const char* ssid, const char* ip) {
 void display_error(const char* error_msg) {
     display_status("ERROR", error_msg, "Check serial log");
 }
+
+// ---- Voice Call Screens ----
+
+void display_voice_listening() {
+    if (!display_initialized) return;
+
+    u8g2.clearBuffer();
+
+    // Header
+    u8g2.setFont(u8g2_font_7x14B_tf);
+    u8g2.drawStr(4, 0, "VOICE CALL");
+    u8g2.drawHLine(0, 16, SCREEN_WIDTH);
+
+    // Mic icon (simple circle with lines)
+    int cx = SCREEN_WIDTH / 2;
+    int cy = 36;
+    u8g2.drawCircle(cx, cy, 8);
+    u8g2.drawVLine(cx, cy + 8, 6);       // stem
+    u8g2.drawHLine(cx - 4, cy + 14, 9);  // base
+
+    // Animated sound waves (alternate based on millis)
+    int phase = (millis() / 300) % 3;
+    if (phase >= 1) u8g2.drawCircle(cx, cy, 12, U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_UPPER_LEFT);
+    if (phase >= 2) u8g2.drawCircle(cx, cy, 16, U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_UPPER_LEFT);
+
+    // Label
+    u8g2.setFont(u8g2_font_6x10_tf);
+    u8g2.drawStr(30, 54, "Listening...");
+
+    u8g2.sendBuffer();
+}
+
+void display_voice_thinking() {
+    if (!display_initialized) return;
+
+    u8g2.clearBuffer();
+
+    // Header
+    u8g2.setFont(u8g2_font_7x14B_tf);
+    u8g2.drawStr(4, 0, "VOICE CALL");
+    u8g2.drawHLine(0, 16, SCREEN_WIDTH);
+
+    // Animated dots: "Processing" with rotating dots
+    u8g2.setFont(u8g2_font_6x10_tf);
+    u8g2.drawStr(24, 30, "Processing");
+
+    int dots = (millis() / 400) % 4;
+    char dot_str[4] = {0};
+    for (int i = 0; i < dots; i++) dot_str[i] = '.';
+    u8g2.drawStr(84, 30, dot_str);
+
+    // Spinning indicator
+    int phase = (millis() / 200) % 4;
+    const char* spinner[] = {"|", "/", "-", "\\"};
+    u8g2.setFont(u8g2_font_7x14B_tf);
+    u8g2.drawStr(60, 44, spinner[phase]);
+
+    u8g2.sendBuffer();
+    u8g2.setFont(u8g2_font_6x10_tf);
+}
+
+void display_voice_playing() {
+    if (!display_initialized) return;
+
+    u8g2.clearBuffer();
+
+    // Header
+    u8g2.setFont(u8g2_font_7x14B_tf);
+    u8g2.drawStr(4, 0, "VOICE CALL");
+    u8g2.drawHLine(0, 16, SCREEN_WIDTH);
+
+    // Speaker icon (triangle + sound waves)
+    int sx = 40;
+    int sy = 36;
+    // Speaker body
+    u8g2.drawTriangle(sx, sy - 6, sx, sy + 6, sx + 10, sy);
+    u8g2.drawBox(sx - 6, sy - 4, 6, 8);
+
+    // Animated sound waves from speaker
+    int phase = (millis() / 250) % 3;
+    if (phase >= 0) u8g2.drawCircle(sx + 12, sy, 4, U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_LOWER_RIGHT);
+    if (phase >= 1) u8g2.drawCircle(sx + 12, sy, 8, U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_LOWER_RIGHT);
+    if (phase >= 2) u8g2.drawCircle(sx + 12, sy, 12, U8G2_DRAW_UPPER_RIGHT | U8G2_DRAW_LOWER_RIGHT);
+
+    // Label
+    u8g2.setFont(u8g2_font_6x10_tf);
+    u8g2.drawStr(32, 54, "Speaking...");
+
+    u8g2.sendBuffer();
+}
+
+void display_voice_ready() {
+    if (!display_initialized) return;
+    display_status("Voice Call", "Hold B to talk", "Long-press to end");
+}
