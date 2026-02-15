@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pymongo
+motor
+python-multipart
+python-jose[cryptography]
+passlib[argon2]
+argon2-cffi
+faster-whisper
+google-generativeai
+python-dotenv
+pydantic
+pydantic-settings
+uuid
+numpy
