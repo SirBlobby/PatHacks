@@ -4,16 +4,6 @@ A full-stack AI learning platform that combines a web dashboard with a physical 
 
 https://buddy.sirblob.co/
 
-## Architecture
-
-```
-frontend/          SvelteKit 2 + Svelte 5 + Tailwind CSS v4
-backend/           Python Flask + Flask-SocketIO + MongoDB
-hardware/          ESP32-S3 Sense firmware (PlatformIO)
-```
-
-The frontend builds to static files (`backend/build/`) via `@sveltejs/adapter-static`. Flask serves these alongside the API, so a single server handles everything in production.
-
 ## Features
 
 - **Source Management** -- Upload PDFs, DOCX, text, and other documents. Content is chunked and embedded for vector search.
